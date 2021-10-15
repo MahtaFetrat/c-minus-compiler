@@ -1,20 +1,18 @@
-from enum import Enum
 from typing import List
 
 from src.scanner.dfa import Transition, TransferException
-
-
-class StateType(Enum):
-    START = 'start'
-    END = 'end'
-    MIDDLE = 'middle'
+from src.scanner.utils.enums import StateType
 
 
 class State(object):
 
-    def __init__(self, transitions: List[Transition], state_type: StateType):
-        self._transitions = transitions
-        self.type = state_type
+    def __init__(self, state_id: str, state_type: StateType, transitions: List[Transition] = None):
+        self.state_id = state_id
+        self._transitions = transitions or []
+        self._type = state_type
+
+    def __eq__(self, other):
+        return self.state_id == other.state_id
 
     def transfer(self, character: str):
         try:
@@ -22,5 +20,8 @@ class State(object):
         except IndexError:
             raise TransferException
 
+    def add_transition(self, transition: Transition):
+        self._transitions.append(transition)
+
     def is_final(self) -> bool:
-        return self.type == StateType.END
+        return self._type == StateType.END
