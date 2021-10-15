@@ -3,34 +3,7 @@
 from src.scanner.dfa.dfa import DFA, State, Transition
 
 # dfa dict output from https://github.com/vgarciasc/dfa-draw
-dfa = {
-    "alphabet": ["*", "9"],
-    "states": [
-        {
-            "id": 0,
-            "name": "0",
-            "coord": {"x": 106, "y": 99},
-            "radius": 20,
-            "end": False,
-            "start": True,
-            "type": State.TokenType.NONE,
-        },
-        {
-            "id": 1,
-            "name": "1",
-            "coord": {"x": 449, "y": 101},
-            "radius": 20,
-            "end": True,
-            "start": False,
-            "type": State.TokenType.NUM,
-        },
-    ],
-    "transitions": [
-        {"id": 0, "state_src_id": 0, "state_dst_id": 1, "symbols": ["9"]},
-        {"id": 1, "state_src_id": 0, "state_dst_id": 0, "symbols": ["*"]},
-        {"id": 2, "state_src_id": 1, "state_dst_id": 1, "symbols": ["9", "*"]},
-    ],
-}
+dfa = {}
 
 
 def build_dfa(dfa_dict=dfa):
