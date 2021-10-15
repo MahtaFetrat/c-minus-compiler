@@ -1,13 +1,16 @@
 """This module provides tools for building a dfa as a graph."""
 
-from src.scanner.dfa.dfa import DFA, State, Transition
+from src.scanner.dfa import State, Transition
+from src.scanner.dfa.dfa import DFA
+
 
 # dfa dict output from https://github.com/vgarciasc/dfa-draw
 dfa = {}
 
 
-def build_dfa(dfa_dict=dfa):
+def build_dfa(dfa_dict=None):
     """Returns the dfa built from the static dict above in this module."""
+    dfa_dict = dfa_dict or dfa
     start_state, states = build_states(dfa_dict)
     build_transitions(states, dfa_dict)
     return DFA(start_state)
