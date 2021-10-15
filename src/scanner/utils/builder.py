@@ -1,4 +1,4 @@
-from dfa.state import State
+from scanner.scanner import State
 
 
 class Builder(object):

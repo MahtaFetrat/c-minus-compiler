@@ -1,6 +1,6 @@
 from typing import List
 
-from dfa.state import State
+from scanner.scanner import State
 
 
 class Transition(object):
