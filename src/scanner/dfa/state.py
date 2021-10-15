@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from scanner.scanner import Transition
+from src.scanner.dfa import Transition
 
 
 class StateType(Enum):

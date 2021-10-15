@@ -1,5 +1,5 @@
-from scanner.scanner import State
-from scanner.scanner import TransferException
+from src.scanner.dfa import State
+from src.scanner.utils.exceptions import TransferException
 
 
 class Automata(object):
