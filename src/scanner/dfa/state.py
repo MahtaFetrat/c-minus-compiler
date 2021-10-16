@@ -7,7 +7,7 @@ from src.scanner.utils.exceptions import TransferException
 
 class State(object):
 
-    def __init__(self, state_id: str,
+    def __init__(self, state_id: int,
                  final: bool = False,
                  token_type=TokenType.NONE,
                  transitions: List[Transition] = None):
