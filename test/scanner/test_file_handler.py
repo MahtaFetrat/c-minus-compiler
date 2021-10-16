@@ -1,6 +1,6 @@
 import re
 import unittest
-from src.scanner.utils.file_handler import FileHandler
+from src.scanner.file_handler import FileHandler
 
 
 def read_symbol_table_file_as_set(content):
