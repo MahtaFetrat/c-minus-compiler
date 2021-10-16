@@ -1,17 +1,20 @@
-from src.scanner.dfa import State
 from src.scanner.utils.exceptions import TransferException
 
 
-class Automata(object):
+class DFA(object):
 
-    def __init__(self, initial: State):
-        self._initial = initial
+    def __init__(self, start_state):
+        self._start_state = start_state
 
     def accepts(self, string) -> bool:
         try:
-            state = self._initial
+            state = self._start_state
             for character in string:
                 state = state.transfer(character)
             return state.is_final()
         except TransferException:
             return False
+
+    @property
+    def start_state(self):
+        return self._start_state

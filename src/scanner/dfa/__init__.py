@@ -1,3 +1,4 @@
-from state import *
-from automata import *
-from transition import *
+from .dfa import *
+from .state import *
+from .builder import *
+from .transition import *

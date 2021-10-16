@@ -1,18 +1,23 @@
 from typing import List
 
-from src.scanner.dfa import Transition, TransferException
-from src.scanner.utils.enums import StateType
+from src.scanner.utils.enums import TokenType
+from src.scanner.dfa.transition import Transition
+from src.scanner.utils.exceptions import TransferException
 
 
 class State(object):
 
-    def __init__(self, state_id: str, state_type: StateType, transitions: List[Transition] = None):
+    def __init__(self, state_id: int,
+                 final: bool = False,
+                 token_type=TokenType.NONE,
+                 transitions: List[Transition] = None):
         self.state_id = state_id
         self._transitions = transitions or []
-        self._type = state_type
+        self._is_final = final
+        self._token_type = token_type
 
     def __eq__(self, other):
-        return self.state_id == other.state_id
+        return bool(self.state_id == other.state_id)
 
     def transfer(self, character: str):
         try:
@@ -24,4 +29,8 @@ class State(object):
         self._transitions.append(transition)
 
     def is_final(self) -> bool:
-        return self._type == StateType.END
+        return bool(self._is_final)
+
+    @property
+    def transitions(self):
+        return self._transitions.copy()
