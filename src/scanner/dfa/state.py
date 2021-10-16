@@ -2,7 +2,7 @@ from typing import List
 
 from src.scanner.utils.enums import TokenType
 from src.scanner.dfa.transition import Transition
-from src.scanner.utils.exceptions import TransferException, RoleBackException
+from src.scanner.utils.exceptions import TransferException
 
 
 class State(object):
@@ -28,8 +28,6 @@ class State(object):
     def transfer(self, character: str):
         try:
             state = list(filter(lambda x: x.is_valid(character), self._transitions))[0].dest_state
-            if state.role_back and state.is_final():
-                raise RoleBackException
             return state
         except IndexError:
             raise TransferException

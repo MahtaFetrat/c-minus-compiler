@@ -1,6 +1,13 @@
 from enum import Enum
 
 
+class StateActionType(Enum):
+    REGULAR = 0
+    ROLE_BACK = 1
+    TRANSFER_EXP = 2
+    UNFINISHED_EXP = 3
+
+
 class TokenType(Enum):
     NONE = 0
     NUM = 1

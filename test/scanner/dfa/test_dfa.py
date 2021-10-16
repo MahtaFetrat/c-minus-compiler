@@ -1,6 +1,6 @@
 import unittest
 
-from src.scanner.dfa import build_dfa, State, RoleBackException
+from src.scanner.dfa import build_dfa, State, StateActionType
 from test.scanner.utils.dfa import DFA_TABLE
 
 
@@ -15,14 +15,16 @@ class TestDFA(unittest.TestCase):
         self.assertEqual(State(0), self._keyid_dfa.start_state)
 
     def test_accept(self):
-        self.assertFalse(self._simple_dfa.accepts("99*9e"))
-        self.assertTrue(self._simple_dfa.accepts("99*9"))
-        self.assertFalse(self._keyid_dfa.accepts("a1b2c3"))
-        self.assertFalse(self._keyid_dfa.accepts("a1b2/3\n"))
-        self.assertRaises(RoleBackException,
-                          self._keyid_dfa.accepts.__func__,
-                          self._keyid_dfa,
-                          "ab23c a\n")
+        self.assertEqual(self._simple_dfa.accepts("99*9e"),
+                         (False, StateActionType.TRANSFER_EXP))
+        self.assertEqual(self._simple_dfa.accepts("99*9"),
+                         (True, StateActionType.REGULAR))
+        self.assertEqual(self._keyid_dfa.accepts("a1b2c3"),
+                         (False, StateActionType.UNFINISHED_EXP))
+        self.assertEqual(self._keyid_dfa.accepts("a1b2/3\n"),
+                         (False, StateActionType.TRANSFER_EXP))
+        self.assertEqual(self._keyid_dfa.accepts("ab23ca\n"),
+                         (True, StateActionType.ROLE_BACK))
 
 
 if __name__ == "__main__":
