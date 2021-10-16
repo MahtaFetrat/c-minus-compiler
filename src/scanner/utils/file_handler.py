@@ -26,10 +26,10 @@ class FileHandler:
         self._extend_lexeme(next_char)
         return next_char
 
-    def get_lexeme(self):
+    def get_lexeme(self, rollback_character=False):
         """Returns the characters proceeded since the previous call to this function."""
-        lexeme = self._lexeme[:]
-        self._lexeme.clear()
+        lexeme = self._lexeme[: -1 if rollback_character else len(self._lexeme)]
+        del self._lexeme[: -1 if rollback_character else len(self._lexeme)]
         return "".join(lexeme)
 
     def write_token(self, token_type, token_string):
@@ -131,7 +131,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(
