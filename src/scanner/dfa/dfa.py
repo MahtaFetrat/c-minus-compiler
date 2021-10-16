@@ -1,4 +1,4 @@
-from src.scanner.utils.exceptions import TransferException
+from src.scanner.utils.exceptions import TransferException, RoleBackException
 
 
 class DFA(object):
@@ -18,3 +18,4 @@ class DFA(object):
     @property
     def start_state(self):
         return self._start_state
+

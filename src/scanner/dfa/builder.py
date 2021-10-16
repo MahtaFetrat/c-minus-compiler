@@ -21,7 +21,10 @@ def build_states(dfa_dict):
     start_state = None
     states = {}
     for state in dfa_dict["states"]:
-        new_state = State(state["id"], state["end"], state["type"])
+        new_state = State(state_id=state["id"],
+                          final=state["end"],
+                          token_type=state.get("type"),
+                          role_back=state.get("role_back"))
         states[state["id"]] = new_state
         if state["start"]:
             start_state = new_state

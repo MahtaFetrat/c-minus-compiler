@@ -9,3 +9,4 @@ class TokenType(Enum):
     SYMBOL = 4
     COMMENT = 5
     WHITESPACE = 6
+    KEYID = 7
