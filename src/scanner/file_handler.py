@@ -13,6 +13,7 @@ class FileHandler:
 
         self._buffer_iterator = iter(self._buffer)
         self._lexeme = []
+        self._lexeme_line_number = 1
 
         self._output_handler = OutputHandler()
 
@@ -22,17 +23,20 @@ class FileHandler:
             return "\0"
         try:
             next_char = next(self._buffer_iterator)
-            self._extend_lexeme(next_char)
+            self._update_lexeme(next_char)
             return next_char
         except StopIteration:
             self._proceed_to_next_line()
             self.get_next_char()
 
     def get_lexeme(self, rollback_character=False):
-        """Returns the characters proceeded since the previous call to this function."""
+        """Returns the characters proceeded since the previous call to this function and
+        the line number of the start of these characters."""
         lexeme = self._lexeme[: -1 if rollback_character else len(self._lexeme)]
         del self._lexeme[: -1 if rollback_character else len(self._lexeme)]
-        return "".join(lexeme)
+        if lexeme[:2] == ["/", "*"]:
+            lexeme.append("...")
+        return "".join(lexeme), self._lexeme_line_number
 
     def write_token(self, token_type, token_string):
         """Adds a token to the tokens file for the line of input currently being processed.
@@ -62,10 +66,14 @@ class FileHandler:
         self._buffer_iterator = iter(self._buffer)
         self._line_number = self._line_number + 1
 
-    def _extend_lexeme(self, char):
-        """Appends the newly read character to the lexeme so far."""
-        if not self._lexeme or self._lexeme[-1] != "\n":
-            self._lexeme.append(char)
+    def _update_lexeme(self, char):
+        """Update the lexeme with the given character."""
+        if len(self._lexeme) <= 1:
+            self._lexeme_line_number = self._line_number
+
+        self._lexeme.append(char)
+        if self._lexeme[:2] == ["/", "*"]:
+            self._lexeme = self._lexeme[:7]
 
 
 class OutputHandler:
