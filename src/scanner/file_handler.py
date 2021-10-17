@@ -36,17 +36,17 @@ class FileHandler:
         del self._lexeme[: -1 if rollback_character else len(self._lexeme)]
         if lexeme[:2] == ["/", "*"]:
             lexeme.append("...")
-        return "".join(lexeme), self._lexeme_line_number
+        return self._lexeme_line_number, "".join(lexeme)
 
     def write_token(self, token_type, token_string):
         """Adds a token to the tokens file for the line of input currently being processed.
         Data will be flushed to the file at the end of the current line of input."""
         self._output_handler.add_token(token_type, token_string)
 
-    def write_error(self, error_string, error_message):
+    def write_error(self, line_number, error_string, error_message):
         """Adds an error to the errors file for the line of input currently being processed.
         Data will be flushed to the file at the end of the current line of input."""
-        self._output_handler.add_error(error_string, error_message)
+        self._output_handler.add_error(line_number, error_string, error_message)
 
     def write_symbol(self, symbol):
         """Adds a non-duplicate item to the symbol_table file. Data will be flushed to the file
@@ -100,9 +100,13 @@ class OutputHandler:
             OutputHandler._ITEM_LOG.format(token_type, token_string)
         )
 
-    def add_error(self, error_string, error_message):
+    def add_error(self, line_number, error_string, error_message):
         """Adds an error log to the errors buffer which will be written in the errors file."""
-        self._error_buffer.append(self._ITEM_LOG.format(error_string, error_message))
+        self._error_buffer.append(
+            self._LINE_LOG.format(
+                line_number, self._ITEM_LOG.format(error_string, error_message)
+            )
+        )
 
     def add_symbol(self, symbol):
         """Adds a non-duplicate item to the symbol table which will be written in the symbol table
@@ -118,7 +122,7 @@ class OutputHandler:
     def flush_buffers(self, line_number):
         """Writes the buffered tokens and errors of the input line number to the output files."""
         self._flush_token_buffer(line_number)
-        self._flush_error_buffer(line_number)
+        self._flush_error_buffer()
 
     def _flush_token_buffer(self, line_number):
         """Writes the buffered tokens of the input line number to the tokens file."""
@@ -127,14 +131,9 @@ class OutputHandler:
         )
         self._token_buffer.clear()
 
-    def _flush_error_buffer(self, line_number):
+    def _flush_error_buffer(self):
         """Writes the buffered errors of the input line number to the errors file."""
-        self._errors_file.write(
-            "".join(
-                self._LINE_LOG.format(line_number, error)
-                for error in self._error_buffer
-            )
-        )
+        self._errors_file.write("".join(self._error_buffer))
         self._error_buffer.clear()
 
     def _write_symbol_table(self):

@@ -23,21 +23,24 @@ class TestFileHandler(unittest.TestCase):
         file_handler = FileHandler()
         for _ in "hello":
             file_handler.get_next_char()
-        self.assertEqual(file_handler.get_lexeme(), "hello")
+        self.assertEqual(file_handler.get_lexeme(), (1, "hello"))
 
         file_handler.get_next_char()
         file_handler.get_lexeme()
 
         for _ in "world":
             file_handler.get_next_char()
-        self.assertEqual(file_handler.get_lexeme(), "world")
+        self.assertEqual(file_handler.get_lexeme(), (1, "world"))
         file_handler.close()
 
     def test_get_multiline_lexeme(self):
         file_handler = FileHandler()
-        for _ in "hello world\nin the next line":
+        for _ in "hello world\nin the next line\n":
             file_handler.get_next_char()
-        self.assertEqual(file_handler.get_lexeme(), "hello world\n")
+        file_handler.get_lexeme()
+        for _ in "/*in third line\nor the fourth":
+            file_handler.get_next_char()
+        self.assertEqual(file_handler.get_lexeme(), (3, "/*in th..."))
         file_handler.close()
 
     def test_write_token(self):
@@ -47,15 +50,15 @@ class TestFileHandler(unittest.TestCase):
         file_handler.write_token("KEYWORD", "void")
         file_handler.write_token("ID", "main")
         file_handler.write_token("SYMBOL", "(")
-        file_handler.write_error("3d", "Invalid number")
-        file_handler.write_error("cd!", "Invalid input")
+        file_handler.write_error(1, "3d", "Invalid number")
+        file_handler.write_error(1, "cd!", "Invalid input")
 
         for _ in "in the next line\n":
             file_handler.get_next_char()
         file_handler.write_token("KEYWORD", "int")
         file_handler.write_token("ID", "a")
         file_handler.write_token("SYMBOL", "=")
-        file_handler.write_error("*/", "Unmatched comment")
+        file_handler.write_error(2, "*/", "Unmatched comment")
 
         file_handler.get_next_char()
         file_handler.close()
