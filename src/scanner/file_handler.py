@@ -11,20 +11,22 @@ class FileHandler:
         self._buffer = self._input_file.readline()
         self._line_number = 1
 
-        self._iterator = iter(self._buffer)
+        self._buffer_iterator = iter(self._buffer)
         self._lexeme = []
 
         self._output_handler = OutputHandler()
 
     def get_next_char(self):
         """Gets the next character of the input file."""
+        if not self._buffer:  # EOF encountered
+            return "\0"
         try:
-            next_char = next(self._iterator)
+            next_char = next(self._buffer_iterator)
+            self._extend_lexeme(next_char)
+            return next_char
         except StopIteration:
             self._proceed_to_next_line()
-            next_char = next(self._iterator)
-        self._extend_lexeme(next_char)
-        return next_char
+            self.get_next_char()
 
     def get_lexeme(self, rollback_character=False):
         """Returns the characters proceeded since the previous call to this function."""
@@ -57,7 +59,7 @@ class FileHandler:
         into the buffer."""
         self._output_handler.flush_buffers(self._line_number)
         self._buffer = self._input_file.readline()
-        self._iterator = iter(self._buffer)
+        self._buffer_iterator = iter(self._buffer)
         self._line_number = self._line_number + 1
 
     def _extend_lexeme(self, char):
