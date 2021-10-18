@@ -27,7 +27,7 @@ class FileHandler:
             return next_char
         except StopIteration:
             self._proceed_to_next_line()
-            self.get_next_char()
+            return self.get_next_char()
 
     def get_lexeme(self, rollback_character=False):
         """Returns the characters proceeded since the previous call to this function and
@@ -74,6 +74,11 @@ class FileHandler:
         self._lexeme.append(char)
         if self._lexeme[:2] == ["/", "*"]:
             self._lexeme = self._lexeme[:7]
+
+    @property
+    def line_number(self):
+        """Returns the number of the line currently being processed by the scanner file handler."""
+        return self._line_number
 
 
 class OutputHandler:
