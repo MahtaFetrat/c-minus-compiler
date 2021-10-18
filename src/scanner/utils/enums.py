@@ -11,9 +11,15 @@ class StateActionType(Enum):
 class TokenType(Enum):
     NONE = 0
     NUM = 1
-    ID = 2
-    KEYWORD = 3
-    SYMBOL = 4
-    COMMENT = 5
-    WHITESPACE = 6
-    KEYID = 7
+    SYMBOL = 2
+    COMMENT = 3
+    WHITESPACE = 4
+    KEYID = 5
+
+
+class ErrorType(Enum):
+    NONE = ''
+    INVALID_INPUT = 'Invalid Input'
+    INVALID_NUMBER = 'Invalid Number'
+    UNMATCHED_COMMENT = 'Unmatched Comment'
+    UNCLOSED_COMMENT = 'Unclosed Comment'
