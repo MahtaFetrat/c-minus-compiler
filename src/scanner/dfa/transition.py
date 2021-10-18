@@ -14,7 +14,7 @@ class Transition(object):
         )
 
     def __str__(self):
-        return " --%s--> %s" % (self._symbols, self.dest_state.state_id)
+        return ' --%s--> %s' % (self._symbols, self.dest_state.state_id)
 
     def is_valid(self, character) -> bool:
         return character in self._symbols
