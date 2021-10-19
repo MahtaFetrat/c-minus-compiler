@@ -27,7 +27,7 @@ class Language(Enum):
     EQUAL = '='
     SLASH = '/'
     EOF_COMMENT = ['EOF', '\n']
-    KEYWORDS = ["if", "else", "void", "int", "repeat", "break", "until", "return"]
+    KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
     def value(self):
         return list(super(Language, self).value)

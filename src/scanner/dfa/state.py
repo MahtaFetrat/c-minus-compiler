@@ -5,7 +5,7 @@ from src.scanner.dfa.transition import Transition
 from src.scanner.utils.exceptions import TransferException
 
 
-class State(object):
+class State:
 
     def __init__(self, state_id: int,
                  token_type: TokenType = TokenType.NONE,

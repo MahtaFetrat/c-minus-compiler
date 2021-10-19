@@ -1,7 +1,7 @@
 from src.scanner.dfa.state import State
 
 
-class DFA(object):
+class DFA:
 
     def __init__(self, start_state):
         self._start_state = start_state

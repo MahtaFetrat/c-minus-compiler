@@ -2,7 +2,7 @@ from src.scanner.dfa import State, Transition
 from src.scanner.dfa.dfa import DFA
 
 
-class Builder(object):
+class Builder:
 
     def __init__(self, dfa_dict):
         self._dfa_dict = dfa_dict

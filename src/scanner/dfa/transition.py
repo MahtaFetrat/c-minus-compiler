@@ -1,7 +1,7 @@
 from typing import List
 
 
-class Transition(object):
+class Transition:
 
     def __init__(self, symbols: List[str], dest_state):
         self._symbols = symbols
