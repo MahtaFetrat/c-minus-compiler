@@ -24,7 +24,7 @@ class State(object):
     def __cleanup__(self):
         if self._token_type != TokenType.NONE \
                 and self._error_type != ErrorType.NONE:
-            raise AttributeError('Error type with final type is invalid')
+            raise AttributeError('None error type with none final type is invalid')
 
     def __eq__(self, other):
         return bool(self.state_id == other.state_id)
@@ -57,7 +57,7 @@ class State(object):
         self._lexeme_errors.clear()
 
     @property
-    def role_back(self) -> bool:
+    def role_back(self):
         return self._role_back
 
     @property
