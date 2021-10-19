@@ -10,6 +10,17 @@ class DFA(object):
         self._start_state = start_state
         self._terminal_state = None
 
+    def __rec_print(self, state):
+        if not state:
+            return
+        for transition in state.transitions:
+            print(transition)
+            if state != transition.dest_state:
+                self.__rec_print(transition.dest_state)
+
+    def __str__(self):
+        self.__rec_print(self._start_state)
+
     def _iterate(self, string) -> State:
         state = self._start_state
         for character in string:
