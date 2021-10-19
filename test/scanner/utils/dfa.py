@@ -1,30 +1,27 @@
 from src.scanner.utils import TokenType
 
 
-simple_dfa_dict = {
-    'alphabet': ['*', '9'],
+SIMPLE_DFA_DICT = {
+    'alphabet': ['1', '9'],
     'states': [
         {
             'id': 0,
-            'end': False,
-            'start': True,
-            'type': TokenType.NONE,
+            'start': True
         },
         {
             'id': 1,
             'end': True,
-            'start': False,
-            'type': TokenType.NUM,
+            'token_type': TokenType.NUM,
         },
     ],
     'transitions': [
         {'id': 0, 'state_src_id': 0, 'state_dst_id': 1, 'symbols': ['9']},
-        {'id': 1, 'state_src_id': 0, 'state_dst_id': 0, 'symbols': ['*']},
-        {'id': 2, 'state_src_id': 1, 'state_dst_id': 1, 'symbols': ['9', '*']},
+        {'id': 1, 'state_src_id': 0, 'state_dst_id': 0, 'symbols': ['1']},
+        {'id': 2, 'state_src_id': 1, 'state_dst_id': 1, 'symbols': ['9', '1']},
     ],
 }
 
-key_id_dfa_dict = {
+KEYID_DFA_DICT = {
     'alphabet': ['a', 'b', 'c', '1', '2', '3', ' ', '\n', '='],
     'states': [
         {
@@ -37,7 +34,7 @@ key_id_dfa_dict = {
         {
             'id': 2,
             'end': True,
-            'type': TokenType.KEYID,
+            'token_type': TokenType.KEYID,
             'role_back': True
         },
     ],
@@ -46,9 +43,4 @@ key_id_dfa_dict = {
         {'id': 1, 'state_src_id': 1, 'state_dst_id': 1, 'symbols': ['a', 'b', 'c', '1', '2', '3']},
         {'id': 2, 'state_src_id': 1, 'state_dst_id': 2, 'symbols': [' ', '\n', '=']},
     ],
-}
-
-DFA_TABLE = {
-    'simple': simple_dfa_dict,
-    'keyid': key_id_dfa_dict
 }
