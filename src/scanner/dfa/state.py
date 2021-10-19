@@ -57,7 +57,7 @@ class State(object):
         self._lexeme_errors.clear()
 
     @property
-    def role_back(self) -> bool:
+    def role_back(self):
         return self._role_back
 
     @property
