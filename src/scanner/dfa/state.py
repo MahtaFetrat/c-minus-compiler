@@ -37,7 +37,7 @@ class State(object):
             state = list(filter(lambda x: x.is_valid(character), self._transitions))[0].dest_state
             return state
         except IndexError:
-            self._lexeme_errors.add(TransferException)
+            self._lexeme_errors.add(TransferException(self.state_id))
             return self
 
     def add_transition(self, transition: Transition):
@@ -70,6 +70,6 @@ class State(object):
 
     @property
     def error_type(self):
-        if TransferException in self._lexeme_errors:
+        if any(isinstance(x, TransferException) for x in self._lexeme_errors):
             return ErrorType.INVALID_INPUT
         return self._error_type
