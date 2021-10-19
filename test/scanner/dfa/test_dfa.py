@@ -52,5 +52,5 @@ class TestDFA(unittest.TestCase):
         dfa.terminal_state.flush_lexeme_errors()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
