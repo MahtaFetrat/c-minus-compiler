@@ -6,8 +6,8 @@ from utils import TokenType, Language
 
 class Scanner:
 
-    def __init__(self):
-        self._file_handler = FileHandler("input.txt")
+    def __init__(self, file):
+        self._file_handler = FileHandler(file)
         self._dfa = Builder(DFA_DICT).build_dfa()
         self._next_terminal_state = None
 

@@ -14,13 +14,13 @@ def read_symbol_table_file_as_set(content):
 
 class TestFileHandler(unittest.TestCase):
     def test_next_char(self):
-        file_handler = FileHandler()
+        file_handler = FileHandler("test_file_handler_input.txt")
         self.assertEqual(file_handler.get_next_char(), "h")
         self.assertEqual(file_handler.get_next_char(), "e")
         file_handler.close()
 
     def test_get_lexeme(self):
-        file_handler = FileHandler()
+        file_handler = FileHandler("test_file_handler_input.txt")
         for _ in "hello":
             file_handler.get_next_char()
         self.assertEqual(file_handler.get_lexeme(), (1, "hello"))
@@ -34,7 +34,7 @@ class TestFileHandler(unittest.TestCase):
         file_handler.close()
 
     def test_get_multiline_lexeme(self):
-        file_handler = FileHandler()
+        file_handler = FileHandler("test_file_handler_input.txt")
         for _ in "hello world\nin the next line\n":
             file_handler.get_next_char()
         file_handler.get_lexeme()
@@ -44,7 +44,7 @@ class TestFileHandler(unittest.TestCase):
         file_handler.close()
 
     def test_write_token(self):
-        file_handler = FileHandler()
+        file_handler = FileHandler("test_file_handler_input.txt")
         for _ in "hello world\n":
             file_handler.get_next_char()
         file_handler.write_token("KEYWORD", "void")
@@ -80,7 +80,7 @@ class TestFileHandler(unittest.TestCase):
             )
 
     def test_write_symbol(self):
-        file_handler = FileHandler()
+        file_handler = FileHandler("test_file_handler_input.txt")
         file_handler.write_symbol("if")
         file_handler.write_symbol("a")
         file_handler.write_symbol("main")

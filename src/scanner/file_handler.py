@@ -5,8 +5,8 @@
 class FileHandler:
     """This class provides an interface for reading the input and writing to the output files."""
 
-    def __init__(self, input_filename="input.txt"):
-        self._input_file = open(input_filename, "r", encoding="utf-8")
+    def __init__(self, file):
+        self._input_file = open(file, "r", encoding="utf-8")
 
         self._buffer = self._input_file.readline()
         self._line_number = 1
