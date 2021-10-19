@@ -11,10 +11,10 @@ class State(object):
                  token_type: TokenType = TokenType.NONE,
                  error_type: ErrorType = ErrorType.NONE,
                  transitions: List[Transition] = None,
-                 role_back: bool = False):
+                 roll_back: bool = False):
 
         self.state_id = state_id
-        self._role_back = role_back or False
+        self._roll_back = roll_back or False
         self._transitions = transitions or []
         self._token_type = token_type or TokenType.NONE
         self._error_type = error_type or ErrorType.NONE
@@ -57,8 +57,8 @@ class State(object):
         self._lexeme_errors.clear()
 
     @property
-    def role_back(self):
-        return self._role_back
+    def roll_back(self):
+        return self._roll_back
 
     @property
     def transitions(self):

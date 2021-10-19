@@ -29,7 +29,7 @@ DFA_DICT = {
             'id': 2,
             'end': True,
             'token_type': TokenType.NUM,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 3,
@@ -43,7 +43,7 @@ DFA_DICT = {
             'id': 5,
             'end': True,
             'token_type': TokenType.KEYID,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 6
@@ -57,7 +57,7 @@ DFA_DICT = {
             'id': 8,
             'end': True,
             'token_type': TokenType.SYMBOL,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 9
@@ -66,7 +66,7 @@ DFA_DICT = {
             'id': 10,
             'end': True,
             'token_type': TokenType.SYMBOL,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 11
@@ -80,7 +80,7 @@ DFA_DICT = {
             'id': 13,
             'end': True,
             'token_type': TokenType.SYMBOL,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 14
@@ -103,7 +103,7 @@ DFA_DICT = {
             'id': 19,
             'end': True,
             'token_type': TokenType.COMMENT,
-            'role_back': True
+            'roll_back': True
         },
         {
             'id': 20,

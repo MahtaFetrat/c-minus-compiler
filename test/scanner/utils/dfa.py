@@ -35,7 +35,7 @@ KEYID_DFA_DICT = {
             'id': 2,
             'end': True,
             'token_type': TokenType.KEYID,
-            'role_back': True
+            'roll_back': True
         },
     ],
     'transitions': [

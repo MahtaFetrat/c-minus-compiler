@@ -1,7 +1,7 @@
-from file_handler import FileHandler
+from src.scanner.file_handler import FileHandler
 from src.scanner.dfa import Builder
 from src.scanner.utils.dfa import DFA_DICT
-from utils import TokenType, Language
+from src.scanner.utils import TokenType, Language
 
 
 class Scanner:
@@ -31,7 +31,7 @@ class Scanner:
         return self._write_final_state(next_state)
 
     def _write_error_state(self, state):
-        line_num, lexeme = self._file_handler.get_lexeme(roll_back=state.role_back)
+        line_num, lexeme = self._file_handler.get_lexeme(roll_back=state.roll_back)
         self._file_handler.write_error(line_num, lexeme, state.error_type.value)
 
     def _write_final_state(self, state):

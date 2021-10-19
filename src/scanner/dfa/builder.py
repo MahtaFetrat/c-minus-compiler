@@ -20,7 +20,7 @@ class Builder(object):
                 state_id=state['id'],
                 token_type=state.get('token_type'),
                 error_type=state.get('error_type'),
-                role_back=state.get('role_back')
+                roll_back=state.get('roll_back')
             )
             states[state['id']] = new_state
             if state.get('start'):

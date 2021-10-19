@@ -35,12 +35,12 @@ class TestDFA(unittest.TestCase):
         self._test_terminal_is_error(self._language_dfa, '12@', ErrorType.INVALID_INPUT, 1)
         self._test_terminal_is_error(self._language_dfa, '12d', ErrorType.INVALID_NUMBER, 3)
 
-    def _test_terminal_is_final(self, dfa, string, role_back, token_type, dest_id):
+    def _test_terminal_is_final(self, dfa, string, roll_back, token_type, dest_id):
         dfa.iterate(string)
         self.assertEqual(dfa.terminal_state, State(dest_id))
         self.assertFalse(dfa.terminal_state.is_error())
         self.assertTrue(dfa.terminal_state.is_final())
-        self.assertEqual(dfa.terminal_state.role_back, role_back)
+        self.assertEqual(dfa.terminal_state.roll_back, roll_back)
         self.assertEqual(dfa.terminal_state.token_type, token_type)
         dfa.terminal_state.flush_lexeme_errors()
 
