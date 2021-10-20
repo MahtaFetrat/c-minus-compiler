@@ -123,7 +123,7 @@ class OutputHandler:
     def __init__(self):
         self._tokens_file = open(OutputHandler._TOKENS_FILENAME, "w", encoding="utf-8")
         self._errors_file = open(OutputHandler._ERRORS_FILENAME, "w", encoding="utf-8")
-        self._symbol_table = set(Language.KEYWORDS)
+        self._symbol_table = set(Language.KEYWORDS.value())
 
         self._token_buffer = []
         self._error_buffer = []
