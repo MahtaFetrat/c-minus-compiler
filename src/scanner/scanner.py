@@ -67,3 +67,6 @@ class Scanner:
         if next_token := self._write_next_terminal_state():
             return next_token
         return self.get_next_token()
+
+    def close(self):
+        self._file_handler.close()

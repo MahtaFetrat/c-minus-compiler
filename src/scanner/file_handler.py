@@ -2,6 +2,7 @@
 
 from src.scanner.utils.enums import Language
 
+
 # pylint: disable=consider-using-with
 class FileHandler:
     """This class provides an interface for reading the input and writing to the output files."""
@@ -174,7 +175,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(
