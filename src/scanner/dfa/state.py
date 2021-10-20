@@ -2,12 +2,11 @@ from typing import List
 
 from src.scanner.utils.enums import TokenType, ErrorType
 from src.scanner.dfa.transition import Transition
-from src.scanner.utils.exceptions import TransferException
 
 
 class State:
 
-    def __init__(self, state_id: int,
+    def __init__(self, state_id,
                  token_type: TokenType = TokenType.NONE,
                  error_type: ErrorType = ErrorType.NONE,
                  transitions: List[Transition] = None,
@@ -18,7 +17,6 @@ class State:
         self._transitions = transitions or []
         self._token_type = token_type or TokenType.NONE
         self._error_type = error_type or ErrorType.NONE
-        self._lexeme_errors = set()
         self.__cleanup__()
 
     def __cleanup__(self):
@@ -27,6 +25,7 @@ class State:
             raise AttributeError('None error type with none final type is invalid')
 
     def __eq__(self, other):
+        print(self.__class__, other.__class__)
         return bool(self.state_id == other.state_id)
 
     def __str__(self):
@@ -37,8 +36,7 @@ class State:
             state = list(filter(lambda x: x.is_valid(character), self._transitions))[0].dest_state
             return state
         except IndexError:
-            self._lexeme_errors.add(TransferException(self.state_id))
-            return self
+            return InvalidState(self.state_id)
 
     def add_transition(self, transition: Transition):
         self._transitions.append(transition)
@@ -47,14 +45,10 @@ class State:
         return self._token_type != TokenType.NONE
 
     def is_error(self) -> bool:
-        return bool(self._error_type != ErrorType.NONE
-                    or self._lexeme_errors)
+        return self._error_type != ErrorType.NONE
 
     def is_terminal(self) -> bool:
         return bool(self.is_final() or self.is_error())
-
-    def flush_lexeme_errors(self):
-        self._lexeme_errors.clear()
 
     @property
     def roll_back(self):
@@ -70,6 +64,16 @@ class State:
 
     @property
     def error_type(self):
-        if any(isinstance(x, TransferException) for x in self._lexeme_errors):
-            return ErrorType.INVALID_INPUT
         return self._error_type
+
+
+class InvalidState(State):
+
+    def __init__(self, state_id):
+        super(InvalidState, self).__init__(
+            state_id=state_id,
+            error_type=ErrorType.INVALID_INPUT
+        )
+
+    def transfer(self, character: str):
+        return self

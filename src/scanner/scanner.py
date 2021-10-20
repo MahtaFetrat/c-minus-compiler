@@ -9,7 +9,6 @@ class Scanner:
     def __init__(self, file):
         self._file_handler = FileHandler(file)
         self._dfa = Builder(DFA_DICT).build_dfa()
-        self._next_terminal_state = None
 
     @property
     def line_num(self):
@@ -20,7 +19,6 @@ class Scanner:
         if next_state.is_terminal():
             if next_state.roll_back:
                 self._file_handler.roll_back()
-            self._next_terminal_state = next_state
             return next_state
         return self._get_next_terminal_state(next_state)
 
@@ -55,16 +53,11 @@ class Scanner:
         self._file_handler.write_token(token_type, token_string)
         return token_type, token_string
 
-    def _flush_next_state_lexeme_errors(self):
-        if self._next_terminal_state:
-            self._next_terminal_state.flush_lexeme_errors()
-
     @staticmethod
     def _is_keyword(token_string):
         return token_string in Language.KEYWORDS.value()
 
     def get_next_token(self):
         if next_token := self._write_next_terminal_state():
-            self._flush_next_state_lexeme_errors()
             return next_token
         return self.get_next_token()
