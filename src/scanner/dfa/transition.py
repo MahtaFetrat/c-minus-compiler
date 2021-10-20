@@ -1,7 +1,7 @@
 from typing import List
 
 
-class Transition(object):
+class Transition:
 
     def __init__(self, symbols: List[str], dest_state):
         self._symbols = symbols
@@ -14,7 +14,7 @@ class Transition(object):
         )
 
     def __str__(self):
-        return " --%s--> %s" % (self._symbols, self.dest_state.state_id)
+        return ' --%s--> %s' % (self._symbols, self.dest_state.state_id)
 
     def is_valid(self, character) -> bool:
         return character in self._symbols

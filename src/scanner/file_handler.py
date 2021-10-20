@@ -1,17 +1,19 @@
 """This module provides an interface for the scanner to work with I/O files."""
 
+from src.scanner.utils.enums import Language
 
 # pylint: disable=consider-using-with
 class FileHandler:
     """This class provides an interface for reading the input and writing to the output files."""
 
-    def __init__(self, input_filename="input.txt"):
-        self._input_file = open(input_filename, "r", encoding="utf-8")
+    def __init__(self, file):
+        self._input_file = open(file, "r", encoding="utf-8")
 
         self._buffer = self._input_file.readline()
         self._line_number = 1
 
-        self._buffer_iterator = iter(self._buffer)
+        self._buffer_iterator = Iterator(self._buffer)
+
         self._lexeme = []
         self._lexeme_line_number = 1
 
@@ -20,7 +22,7 @@ class FileHandler:
     def get_next_char(self):
         """Gets the next character of the input file."""
         if not self._buffer:  # EOF encountered
-            return "\0"
+            return ""
         try:
             next_char = next(self._buffer_iterator)
             self._update_lexeme(next_char)
@@ -29,11 +31,11 @@ class FileHandler:
             self._proceed_to_next_line()
             return self.get_next_char()
 
-    def get_lexeme(self, rollback_character=False):
-        """Returns the characters proceeded since the previous call to this function and
-        the line number of the start of these characters."""
-        lexeme = self._lexeme[: -1 if rollback_character else len(self._lexeme)]
-        del self._lexeme[: -1 if rollback_character else len(self._lexeme)]
+    def get_lexeme(self, roll_back=False):
+        """Returns a tuple (the line number of the start of the lexeme,
+        the characters proceeded since the previous call to this function)."""
+        lexeme = self._lexeme[: -1 if roll_back else len(self._lexeme)]
+        del self._lexeme[: -1 if roll_back else len(self._lexeme)]
         if lexeme[:2] == ["/", "*"]:
             lexeme.append("...")
         return self._lexeme_line_number, "".join(lexeme)
@@ -63,8 +65,8 @@ class FileHandler:
         into the buffer."""
         self._output_handler.flush_buffers(self._line_number)
         self._buffer = self._input_file.readline()
-        self._buffer_iterator = iter(self._buffer)
-        self._line_number = self._line_number + 1
+        self._buffer_iterator = Iterator(self._buffer)
+        self._line_number += 1 if self._buffer else 0
 
     def _update_lexeme(self, char):
         """Update the lexeme with the given character."""
@@ -80,6 +82,32 @@ class FileHandler:
         """Returns the number of the line currently being processed by the scanner file handler."""
         return self._line_number
 
+    def roll_back(self):
+        """Moves the iterator one character back. Note that iterator can move back at most
+        one character and using this function multiple times has no further effect."""
+        self._buffer_iterator.roll_back()
+
+
+class Iterator:
+    """Custom iterator with one character history."""
+
+    def __init__(self, buffer):
+        self._iterator = iter(buffer)
+        self._history = ""
+        self._roll_back = False
+
+    def __next__(self):
+        if self._roll_back:
+            self._roll_back = False
+            return self._history
+        self._history = next(self._iterator)
+        return self._history
+
+    def roll_back(self):
+        """Moves the iterator one character back. Note that iterator can move back at most
+        one character and using this function multiple times has no further effect."""
+        self._roll_back = True
+
 
 class OutputHandler:
     """This class handles writing to the output files, including tokens, lexical_errors,
@@ -94,7 +122,7 @@ class OutputHandler:
     def __init__(self):
         self._tokens_file = open(OutputHandler._TOKENS_FILENAME, "w", encoding="utf-8")
         self._errors_file = open(OutputHandler._ERRORS_FILENAME, "w", encoding="utf-8")
-        self._symbol_table = set()
+        self._symbol_table = set(Language.KEYWORDS)
 
         self._token_buffer = []
         self._error_buffer = []
@@ -131,9 +159,10 @@ class OutputHandler:
 
     def _flush_token_buffer(self, line_number):
         """Writes the buffered tokens of the input line number to the tokens file."""
-        self._tokens_file.write(
-            self._LINE_LOG.format(line_number, "".join(self._token_buffer))
-        )
+        if self._token_buffer:
+            self._tokens_file.write(
+                self._LINE_LOG.format(line_number, "".join(self._token_buffer))
+            )
         self._token_buffer.clear()
 
     def _flush_error_buffer(self):

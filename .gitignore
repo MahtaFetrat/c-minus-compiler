@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 .idea/
+
+lexical_errors.txt
+symbol_table.txt
+tokens.txt
