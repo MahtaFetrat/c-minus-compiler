@@ -69,7 +69,7 @@ class State:
 class InvalidState(State):
 
     def __init__(self, state_id):
-        super(InvalidState, self).__init__(
+        super().__init__(
             state_id=state_id,
             error_type=ErrorType.INVALID_INPUT
         )
