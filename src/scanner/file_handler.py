@@ -36,7 +36,7 @@ class FileHandler:
         """Returns a tuple (the line number of the start of the lexeme,
         the characters proceeded since the previous call to this function)."""
         lexeme = self._lexeme[: -1 if roll_back else len(self._lexeme)]
-        del self._lexeme[: -1 if roll_back else len(self._lexeme)]
+        self._lexeme.clear()
         if lexeme[:2] == ["/", "*"]:
             lexeme.append("...")
         return self._lexeme_line_number, "".join(lexeme)
@@ -175,7 +175,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(
