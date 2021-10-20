@@ -16,15 +16,20 @@ class Scanner:
         return self._file_handler.line_number
 
     def _get_next_terminal_state(self, current_state):
-        next_state = current_state.transfer(self._file_handler.get_next_char())
-        if next_state.is_terminal():
-            if next_state.roll_back:
-                self._file_handler.roll_back()
-            self._next_terminal_state = next_state
-            return next_state
-        return self._get_next_terminal_state(next_state)
+        """:raises StopIteration: if end of input file reached."""
+        next_char = self._file_handler.get_next_char()
+        if next_char == '' and current_state == self._dfa.start_state:
+            raise StopIteration
+        next_state = current_state.transfer(next_char)
+        if not next_state.is_terminal():
+            return self._get_next_terminal_state(next_state)
+        if next_state.roll_back:
+            self._file_handler.roll_back()
+        self._next_terminal_state = next_state
+        return next_state
 
     def _write_next_terminal_state(self):
+        """:raises StopIteration: if end of input file reached."""
         next_state = self._get_next_terminal_state(self._dfa.start_state)
         if next_state.is_error():
             return self._write_error_state(next_state)
@@ -64,6 +69,7 @@ class Scanner:
         return token_string in Language.KEYWORDS.value()
 
     def get_next_token(self):
+        """:raises StopIteration: if end of input file reached."""
         if next_token := self._write_next_terminal_state():
             self._flush_next_state_lexeme_errors()
             return next_token

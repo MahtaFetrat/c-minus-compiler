@@ -21,7 +21,7 @@ class FileHandler:
     def get_next_char(self):
         """Gets the next character of the input file."""
         if not self._buffer:  # EOF encountered
-            return "\0"
+            return ""
         try:
             next_char = next(self._buffer_iterator)
             self._update_lexeme(next_char)
@@ -64,8 +64,8 @@ class FileHandler:
         into the buffer."""
         self._output_handler.flush_buffers(self._line_number)
         self._buffer = self._input_file.readline()
-        self._buffer_iterator = iter(self._buffer)
-        self._line_number = self._line_number + 1
+        self._buffer_iterator = Iterator(self._buffer)
+        self._line_number += 1 if self._buffer else 0
 
     def _update_lexeme(self, char):
         """Update the lexeme with the given character."""
@@ -158,9 +158,10 @@ class OutputHandler:
 
     def _flush_token_buffer(self, line_number):
         """Writes the buffered tokens of the input line number to the tokens file."""
-        self._tokens_file.write(
-            self._LINE_LOG.format(line_number, "".join(self._token_buffer))
-        )
+        if self._token_buffer:
+            self._tokens_file.write(
+                self._LINE_LOG.format(line_number, "".join(self._token_buffer))
+            )
         self._token_buffer.clear()
 
     def _flush_error_buffer(self):

@@ -22,11 +22,11 @@ class Language(Enum):
     DIGITS = '0123456789'
     SYMBOLS = ';:,[](){}+-*=<'
     LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    WHITESPACES = [' ', '', '\n', '\r', '\t', '\v', '\f', 'EOF']
+    WHITESPACES = [' ', '\n', '\r', '\t', '\v', '\f', '']
     STAR = '*'
     EQUAL = '='
     SLASH = '/'
-    EOF_COMMENT = ['EOF', '\n']
+    EOF_COMMENT = ['', '\n']
     KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
     def value(self):
