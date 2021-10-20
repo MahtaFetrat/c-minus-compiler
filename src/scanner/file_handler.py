@@ -1,5 +1,6 @@
 """This module provides an interface for the scanner to work with I/O files."""
 
+from src.scanner.utils.enums import Language
 
 # pylint: disable=consider-using-with
 class FileHandler:
@@ -121,7 +122,7 @@ class OutputHandler:
     def __init__(self):
         self._tokens_file = open(OutputHandler._TOKENS_FILENAME, "w", encoding="utf-8")
         self._errors_file = open(OutputHandler._ERRORS_FILENAME, "w", encoding="utf-8")
-        self._symbol_table = set()
+        self._symbol_table = set(Language.KEYWORDS)
 
         self._token_buffer = []
         self._error_buffer = []
