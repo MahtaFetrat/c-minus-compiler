@@ -70,3 +70,12 @@ class Scanner:
 
     def close(self):
         self._file_handler.close()
+
+    def get_all_tokens(self):
+        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
+        while True:
+            try:
+                self.get_next_token()
+            except StopIteration:
+                self.close()
+                break
