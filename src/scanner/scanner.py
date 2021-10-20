@@ -39,6 +39,7 @@ class Scanner:
             return self._write_keyid_state(state)
         if state.token_type in [TokenType.NUM, TokenType.SYMBOL]:
             return self._write_non_keyid_state(state)
+        _, _ = self._file_handler.get_lexeme(roll_back=state.roll_back)  # throw the lexeme away
         return None
 
     def _write_keyid_state(self, state):

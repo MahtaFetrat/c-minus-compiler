@@ -126,7 +126,7 @@ DFA_DICT = {
         {'id': 7, 'state_src_id': 0, 'state_dst_id': 6, 'symbols': _STAR},
         {'id': 8, 'state_src_id': 6, 'state_dst_id': 7, 'symbols': _SLASH},
         {'id': 9, 'state_src_id': 6, 'state_dst_id': 8, 'symbols': _ALL},
-        {'id': 10, 'state_src_id': 0, 'state_dst_id': 9, 'symbols': diff(_ALL, _STAR + _EQUAL)},
+        {'id': 10, 'state_src_id': 0, 'state_dst_id': 9, 'symbols': diff(_SYMBOLS, _STAR + _EQUAL)},
         {'id': 11, 'state_src_id': 9, 'state_dst_id': 10, 'symbols': _ALL},
         {'id': 12, 'state_src_id': 0, 'state_dst_id': 11, 'symbols': _EQUAL},
         {'id': 13, 'state_src_id': 11, 'state_dst_id': 12, 'symbols': _EQUAL},
