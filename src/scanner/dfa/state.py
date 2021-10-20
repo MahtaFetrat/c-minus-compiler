@@ -25,7 +25,6 @@ class State:
             raise AttributeError('None error type with none final type is invalid')
 
     def __eq__(self, other):
-        print(self.__class__, other.__class__)
         return bool(self.state_id == other.state_id)
 
     def __str__(self):
