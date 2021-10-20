@@ -42,14 +42,12 @@ class TestDFA(unittest.TestCase):
         self.assertTrue(dfa.terminal_state.is_final())
         self.assertEqual(dfa.terminal_state.roll_back, roll_back)
         self.assertEqual(dfa.terminal_state.token_type, token_type)
-        dfa.terminal_state.flush_lexeme_errors()
 
     def _test_terminal_is_error(self, dfa, string, error_type, dest_id):
         dfa.iterate(string)
         self.assertEqual(dfa.terminal_state, State(dest_id))
         self.assertTrue(dfa.terminal_state.is_error())
         self.assertEqual(dfa.terminal_state.error_type, error_type)
-        dfa.terminal_state.flush_lexeme_errors()
 
 
 if __name__ == '__main__':
