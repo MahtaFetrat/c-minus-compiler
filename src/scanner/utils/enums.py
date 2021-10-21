@@ -26,6 +26,7 @@ class Language(Enum):
     STAR = '*'
     EQUAL = '='
     SLASH = '/'
+    EOF = '\0'
     EOF_COMMENT = ['\0', '\n']
     KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
@@ -39,4 +40,4 @@ class Language(Enum):
                Language.LETTERS.value() + \
                Language.WHITESPACES.value() + \
                Language.SLASH.value() + \
-               Language.EOF_COMMENT.value()
+               Language.EOF.value()

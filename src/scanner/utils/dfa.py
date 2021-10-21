@@ -7,6 +7,7 @@ _DIGITS = Language.DIGITS.value()
 _SYMBOLS = Language.SYMBOLS.value()
 _LETTERS = Language.LETTERS.value()
 _WHITESPACES = Language.WHITESPACES.value()
+_EOF = Language.EOF.value()
 _EOF_COMMENT = Language.EOF_COMMENT.value()
 _ALL = Language.get_all_characters()
 
@@ -133,7 +134,7 @@ DFA_DICT = {
         {'id': 14, 'state_src_id': 11, 'state_dst_id': 13, 'symbols': _ALL},
         {'id': 15, 'state_src_id': 0, 'state_dst_id': 14, 'symbols': _SLASH},
         {'id': 16, 'state_src_id': 14, 'state_dst_id': 15, 'symbols': _STAR},
-        {'id': 17, 'state_src_id': 15, 'state_dst_id': 15, 'symbols': diff(_ALL, _STAR + _EOF_COMMENT)},
+        {'id': 17, 'state_src_id': 15, 'state_dst_id': 15, 'symbols': diff(_ALL, _STAR + _EOF)},
         {'id': 18, 'state_src_id': 15, 'state_dst_id': 16, 'symbols': _STAR},
         {'id': 19, 'state_src_id': 16, 'state_dst_id': 16, 'symbols': _STAR},
         {'id': 20, 'state_src_id': 16, 'state_dst_id': 17, 'symbols': _SLASH},
@@ -142,6 +143,6 @@ DFA_DICT = {
         {'id': 23, 'state_src_id': 18, 'state_dst_id': 18, 'symbols': diff(_ALL, _EOF_COMMENT)},
         {'id': 24, 'state_src_id': 18, 'state_dst_id': 19, 'symbols': _EOF_COMMENT},
         {'id': 25, 'state_src_id': 0, 'state_dst_id': 20, 'symbols': _WHITESPACES},
-        {'id': 26, 'state_src_id': 15, 'state_dst_id': 21, 'symbols': _EOF_COMMENT},
+        {'id': 26, 'state_src_id': 15, 'state_dst_id': 21, 'symbols': _EOF},
     ],
 }
