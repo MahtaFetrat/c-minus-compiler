@@ -127,6 +127,7 @@ class OutputHandler:
 
         self._token_buffer = []
         self._error_buffer = []
+        self._error_found = False
 
     def add_token(self, token_type, token_string):
         """Adds a token to the tokens buffer which will be written in the tokens file."""
@@ -136,6 +137,7 @@ class OutputHandler:
 
     def add_error(self, line_number, error_string, error_message):
         """Adds an error log to the errors buffer which will be written in the errors file."""
+        self._error_found = True
         self._error_buffer.append(
             self._LINE_LOG.format(
                 line_number, self._ITEM_LOG.format(error_string, error_message)
@@ -148,10 +150,12 @@ class OutputHandler:
         self._symbol_table.add(symbol)
 
     def close(self):
-        """Writes the symbol table to the output file and closes all open files."""
+        """Writes the symbol table to the symbol_table.txt file.
+        Writes 'There is no lexical error.' in the lexical_errors.txt if no errors were found.
+        And closes all open files."""
         self._write_symbol_table()
         self._tokens_file.close()
-        self._errors_file.close()
+        self._close_error_file()
 
     def flush_buffers(self, line_number):
         """Writes the buffered tokens and errors of the input line number to the output files."""
@@ -175,7 +179,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(
@@ -183,3 +187,10 @@ class OutputHandler:
                     for i in range(len(self._symbol_table))
                 )
             )
+
+    def _close_error_file(self):
+        """Writes 'There is no lexical error.' in the lexical_errors.txt if no errors were found.
+        And closes the file."""
+        if not self._error_found:
+            self._errors_file.write("There is no lexical error.")
+        self._errors_file.close()
