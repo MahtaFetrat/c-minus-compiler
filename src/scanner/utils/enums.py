@@ -12,10 +12,10 @@ class TokenType(Enum):
 
 class ErrorType(Enum):
     NONE = ''
-    INVALID_INPUT = 'Invalid Input'
-    INVALID_NUMBER = 'Invalid Number'
-    UNMATCHED_COMMENT = 'Unmatched Comment'
-    UNCLOSED_COMMENT = 'Unclosed Comment'
+    INVALID_INPUT = 'Invalid input'
+    INVALID_NUMBER = 'Invalid number'
+    UNMATCHED_COMMENT = 'Unmatched comment'
+    UNCLOSED_COMMENT = 'Unclosed comment'
 
 
 class Language(Enum):
@@ -37,4 +37,5 @@ class Language(Enum):
         return Language.DIGITS.value() + \
                Language.SYMBOLS.value() + \
                Language.LETTERS.value() + \
-               Language.WHITESPACES.value()
+               Language.WHITESPACES.value() + \
+               Language.SLASH.value()
