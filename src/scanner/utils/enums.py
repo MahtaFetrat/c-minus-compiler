@@ -29,6 +29,7 @@ class Language(Enum):
     EOF = '\0'
     EOF_COMMENT = ['\0', '\n']
     KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+    ADD = '@#$#%%$.!'
 
     def value(self):
         return list(super(Language, self).value)
