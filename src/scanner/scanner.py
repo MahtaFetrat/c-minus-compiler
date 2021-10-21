@@ -17,7 +17,7 @@ class Scanner:
     def _get_next_terminal_state(self, current_state):
         """:raises StopIteration: if end of input file reached."""
         next_char = self._file_handler.get_next_char()
-        if next_char == '' and current_state == self._dfa.start_state:
+        if next_char == '\0' and current_state == self._dfa.start_state:
             raise StopIteration
         next_state = current_state.transfer(next_char)
         if not next_state.is_terminal():

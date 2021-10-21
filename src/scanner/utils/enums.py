@@ -26,7 +26,7 @@ class Language(Enum):
     STAR = '*'
     EQUAL = '='
     SLASH = '/'
-    EOF_COMMENT = ['', '\n']
+    EOF_COMMENT = ['\0', '\n']
     KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
     def value(self):
@@ -38,4 +38,5 @@ class Language(Enum):
                Language.SYMBOLS.value() + \
                Language.LETTERS.value() + \
                Language.WHITESPACES.value() + \
-               Language.SLASH.value()
+               Language.SLASH.value() + \
+               Language.EOF_COMMENT.value()

@@ -23,7 +23,9 @@ class FileHandler:
     def get_next_char(self):
         """Gets the next character of the input file."""
         if not self._buffer:  # EOF encountered
-            return ""
+            self._output_handler.flush_buffers(self._line_number)
+            self._update_lexeme("\0")
+            return "\0"
         try:
             next_char = next(self._buffer_iterator)
             self._update_lexeme(next_char)
