@@ -129,6 +129,7 @@ class OutputHandler:
 
         self._token_buffer = []
         self._error_buffer = []
+        self._error_line_number = 1
         self._error_found = False
 
     def add_token(self, token_type, token_string):
@@ -140,10 +141,9 @@ class OutputHandler:
     def add_error(self, line_number, error_string, error_message):
         """Adds an error log to the errors buffer which will be written in the errors file."""
         self._error_found = True
+        self._error_line_number = line_number
         self._error_buffer.append(
-            self._LINE_LOG.format(
-                line_number, self._ITEM_LOG.format(error_string, error_message)
-            )
+            OutputHandler._ITEM_LOG.format(error_string, error_message)
         )
 
     def add_symbol(self, symbol):
@@ -174,7 +174,10 @@ class OutputHandler:
 
     def _flush_error_buffer(self):
         """Writes the buffered errors of the input line number to the errors file."""
-        self._errors_file.write("".join(self._error_buffer))
+        if self._error_buffer:
+            self._errors_file.write(
+                self._LINE_LOG.format(self._error_line_number, "".join(self._error_buffer))
+            )
         self._error_buffer.clear()
 
     def _write_symbol_table(self):
