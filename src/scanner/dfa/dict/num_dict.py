@@ -1,11 +1,11 @@
-from src.scanner.utils.creator.__extra__ import *
-from src.scanner.utils.creator import BaseCreator
+from src.scanner.dfa.dict.base import *
+from src.scanner.utils import *
 
 
-class NUMCreator(BaseCreator):
+class NUMDFADict(BaseDFADict):
 
     @property
-    def states(self):
+    def states(self) -> List[Dict[str, Any]]:
         return [
             {
                 'id': 1
@@ -24,10 +24,10 @@ class NUMCreator(BaseCreator):
         ]
 
     @property
-    def transitions(self):
+    def transitions(self) -> List[Dict[str, Any]]:
         return [
             {
-                'state_src_id': self.INITIAL_STATE_ID,
+                'state_src_id': 0,
                 'state_dst_id': 1,
                 'symbols': DIGITS
             },
@@ -39,12 +39,12 @@ class NUMCreator(BaseCreator):
             {
                 'state_src_id': 1,
                 'state_dst_id': 2,
-                'symbols': self.diff(ALL, LETTERS + DIGITS)
+                'symbols': diff(ALL, LETTERS + DIGITS)
             },
             {
                 'state_src_id': 1,
                 'state_dst_id': 3,
-                'symbols': self.diff(ALL, LETTERS),
+                'symbols': diff(ALL, LETTERS),
                 'type': TransitionType.EXCLUDE
             }
         ]

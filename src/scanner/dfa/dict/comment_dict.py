@@ -1,11 +1,11 @@
-from src.scanner.utils.creator.__extra__ import *
-from src.scanner.utils.creator.base import BaseCreator
+from src.scanner.dfa.dict.base import *
+from src.scanner.utils import *
 
 
-class COMMENTCreator(BaseCreator):
+class COMMENTDFADict(BaseDFADict):
 
     @property
-    def states(self):
+    def states(self) -> List[Dict[str, Any]]:
         return [
             {
                 'id': 14
@@ -42,9 +42,9 @@ class COMMENTCreator(BaseCreator):
         ]
 
     @property
-    def transitions(self):
+    def transitions(self) -> List[Dict[str, Any]]:
         return [
-            {'state_src_id': self.INITIAL_STATE_ID, 'state_dst_id': 14, 'symbols': SLASH},
+            {'state_src_id': 0, 'state_dst_id': 14, 'symbols': SLASH},
             {'state_src_id': 14, 'state_dst_id': 15, 'symbols': STAR},
             {'state_src_id': 15, 'state_dst_id': 16, 'symbols': STAR},
             {'state_src_id': 16, 'state_dst_id': 16, 'symbols': STAR},
