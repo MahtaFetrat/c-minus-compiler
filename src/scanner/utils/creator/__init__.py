@@ -6,5 +6,3 @@ from .keyid_creator import *
 from .symbol_creator import *
 from .comment_creator import *
 from .whitespace_creator import *
-
-import string
