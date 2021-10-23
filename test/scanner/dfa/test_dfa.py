@@ -1,7 +1,6 @@
 import unittest
 
-from src.scanner.dfa import Builder, State, ErrorType, TokenType
-from src.scanner.utils.dfa import DFA_DICT
+from src.scanner.dfa import Builder, State, ErrorType, TokenType, DFADict
 from test.scanner.utils.dfa import SIMPLE_DFA_DICT, KEYID_DFA_DICT
 
 
@@ -10,7 +9,7 @@ class TestDFA(unittest.TestCase):
     def setUp(self) -> None:
         self._simple_dfa = Builder(SIMPLE_DFA_DICT).build_dfa()
         self._keyid_dfa = Builder(KEYID_DFA_DICT).build_dfa()
-        self._language_dfa = Builder(DFA_DICT).build_dfa()
+        self._language_dfa = Builder(DFADict()).build_dfa()
 
     def test_start_state(self):
         self.assertEqual(State(0), self._simple_dfa.start_state)
@@ -32,7 +31,7 @@ class TestDFA(unittest.TestCase):
         self.assert_terminal_is_final(self._language_dfa, '// ab \n', True, TokenType.COMMENT, 19)
         self.assert_terminal_is_error(self._language_dfa, '/*ab\0', ErrorType.UNCLOSED_COMMENT, 20)
         self.assert_terminal_is_error(self._language_dfa, '*/', ErrorType.UNMATCHED_COMMENT, 7)
-        self.assert_terminal_is_error(self._language_dfa, '12@', ErrorType.INVALID_INPUT, 1)
+        self.assert_terminal_is_error(self._language_dfa, '12@', ErrorType.INVALID_NUMBER, 3)
         self.assert_terminal_is_error(self._language_dfa, '12d', ErrorType.INVALID_NUMBER, 3)
         self.assert_terminal_is_error(self._language_dfa, '*@', ErrorType.INVALID_INPUT, 6)
 
