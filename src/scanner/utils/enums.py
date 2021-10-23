@@ -1,3 +1,5 @@
+import string
+
 from enum import Enum
 
 
@@ -18,16 +20,21 @@ class ErrorType(Enum):
     UNCLOSED_COMMENT = 'Unclosed comment'
 
 
+class TransitionType(Enum):
+    INCLUDE = 0
+    EXCLUDE = 1
+
+
 class Language(Enum):
-    DIGITS = '0123456789'
-    SYMBOLS = ';:,[](){}+-*=<'
-    LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    WHITESPACES = [' ', '\n', '\r', '\t', '\v', '\f', '']
+    EOF = '\0'
     STAR = '*'
     EQUAL = '='
     SLASH = '/'
-    EOF = '\0'
-    EOF_COMMENT = ['\0', '\n']
+    NEW_LINE = '\n'
+    DIGITS = string.digits
+    LETTERS = string.ascii_letters
+    SYMBOLS = ';:,[](){}+-*=<'
+    WHITESPACES = [' ', '\n', '\r', '\t', '\v', '\f', '\0']
     KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
     def value(self):
@@ -35,9 +42,8 @@ class Language(Enum):
 
     @classmethod
     def get_all_characters(cls):
-        return Language.DIGITS.value() + \
+        return Language.SLASH.value() + \
+               Language.DIGITS.value() + \
                Language.SYMBOLS.value() + \
                Language.LETTERS.value() + \
-               Language.WHITESPACES.value() + \
-               Language.SLASH.value() + \
-               Language.EOF.value()
+               Language.WHITESPACES.value()
