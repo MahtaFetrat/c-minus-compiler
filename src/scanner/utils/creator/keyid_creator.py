@@ -34,6 +34,6 @@ class KEYIDCreator(BaseCreator):
             {
                 'state_src_id': 4,
                 'state_dst_id': 5,
-                'symbols': SYMBOLS + WHITESPACES
+                'symbols': self.diff(ALL, LETTERS + DIGITS)
             },
         ]
