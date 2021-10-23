@@ -10,8 +10,8 @@ class FileHandler:
     def __init__(self, file):
         self._input_file = open(file, "r", encoding="utf-8")
 
-        self._buffer = self._input_file.readline()
-        self._line_number = 1
+        self._buffer = ""
+        self._line_number = 0
 
         self._buffer_iterator = Iterator(self._buffer)
 
@@ -19,6 +19,8 @@ class FileHandler:
         self._lexeme_line_number = 1
 
         self._output_handler = OutputHandler()
+
+        self._proceed_to_next_line()
 
     def get_next_char(self):
         """Gets the next character of the input file."""
@@ -68,6 +70,8 @@ class FileHandler:
         into the buffer."""
         self._output_handler.flush_buffers(self._line_number)
         self._buffer = self._input_file.readline()
+        if self._buffer and self._buffer[-1] != "\n":  # Add final new-line
+            self._buffer = self._buffer + "\n"
         self._buffer_iterator = Iterator(self._buffer)
         self._line_number += 1 if self._buffer else 0
 
@@ -176,7 +180,9 @@ class OutputHandler:
         """Writes the buffered errors of the input line number to the errors file."""
         if self._error_buffer:
             self._errors_file.write(
-                self._LINE_LOG.format(self._error_line_number, "".join(self._error_buffer))
+                self._LINE_LOG.format(
+                    self._error_line_number, "".join(self._error_buffer)
+                )
             )
         self._error_buffer.clear()
 
@@ -184,7 +190,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(
