@@ -1,11 +1,11 @@
-from src.scanner.utils.creator.__extra__ import *
-from src.scanner.utils.creator.base import BaseCreator
+from src.scanner.dfa.dict.base import *
+from src.scanner.utils import *
 
 
-class EQUALCreator(BaseCreator):
+class EQUALDFADict(BaseDFADict):
 
     @property
-    def states(self):
+    def states(self) -> List[Dict[str, Any]]:
         return [
             {
                 'id': 11
@@ -24,10 +24,10 @@ class EQUALCreator(BaseCreator):
         ]
 
     @property
-    def transitions(self):
+    def transitions(self) -> List[Dict[str, Any]]:
         return [
             {
-                'state_src_id': self.INITIAL_STATE_ID,
+                'state_src_id': 0,
                 'state_dst_id': 11,
                 'symbols': EQUAL
             },

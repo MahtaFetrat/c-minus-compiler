@@ -13,3 +13,7 @@ NEW_LINE: List[str] = Language.NEW_LINE.value()
 WHITESPACES: List[str] = Language.WHITESPACES.value()
 
 ALL: List[str] = Language.get_all_characters()
+
+
+def diff(first, second):
+    return list(set(first).difference(set(second)))

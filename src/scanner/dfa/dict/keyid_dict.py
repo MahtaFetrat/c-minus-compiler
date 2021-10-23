@@ -1,11 +1,11 @@
-from src.scanner.utils.creator.__extra__ import *
-from src.scanner.utils.creator.base import BaseCreator
+from src.scanner.dfa.dict.base import *
+from src.scanner.utils import *
 
 
-class KEYIDCreator(BaseCreator):
+class KEYIDDFADict(BaseDFADict):
 
     @property
-    def states(self):
+    def states(self) -> List[Dict[str, Any]]:
         return [
             {
                 'id': 4
@@ -19,10 +19,10 @@ class KEYIDCreator(BaseCreator):
         ]
 
     @property
-    def transitions(self):
+    def transitions(self) -> List[Dict[str, Any]]:
         return [
             {
-                'state_src_id': self.INITIAL_STATE_ID,
+                'state_src_id': 0,
                 'state_dst_id': 4,
                 'symbols': LETTERS
             },
@@ -34,6 +34,6 @@ class KEYIDCreator(BaseCreator):
             {
                 'state_src_id': 4,
                 'state_dst_id': 5,
-                'symbols': self.diff(ALL, LETTERS + DIGITS)
+                'symbols': diff(ALL, LETTERS + DIGITS)
             },
         ]

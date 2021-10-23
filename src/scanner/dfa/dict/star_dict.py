@@ -1,11 +1,11 @@
-from src.scanner.utils.creator.__extra__ import *
-from src.scanner.utils.creator import BaseCreator
+from src.scanner.dfa.dict.base import *
+from src.scanner.utils import *
 
 
-class STARCreator(BaseCreator):
+class STARDFADict(BaseDFADict):
 
     @property
-    def states(self):
+    def states(self) -> List[Dict[str, Any]]:
         return [
             {
                 'id': 6
@@ -24,10 +24,10 @@ class STARCreator(BaseCreator):
         ]
 
     @property
-    def transitions(self):
+    def transitions(self) -> List[Dict[str, Any]]:
         return [
             {
-                'state_src_id': self.INITIAL_STATE_ID,
+                'state_src_id': 0,
                 'state_dst_id': 6,
                 'symbols': STAR
             },
@@ -39,6 +39,6 @@ class STARCreator(BaseCreator):
             {
                 'state_src_id': 6,
                 'state_dst_id': 8,
-                'symbols': self.diff(ALL, SLASH)
+                'symbols': diff(ALL, SLASH)
             },
         ]
