@@ -82,7 +82,7 @@ class FileHandler:
 
         self._lexeme.append(char)
         if self._lexeme[:2] == ["/", "*"]:
-            self._lexeme = self._lexeme[:7]
+            self._lexeme = list(filter(lambda x: x != '\n', self._lexeme[:8]))
 
     @property
     def line_number(self):
@@ -190,7 +190,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(

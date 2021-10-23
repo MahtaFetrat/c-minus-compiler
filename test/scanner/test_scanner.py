@@ -46,16 +46,15 @@ class TestScanner(unittest.TestCase):
                 self.assert_symbol_table_equal(test_number)
 
     def test_scanner_set2(self):
-        # for i in range(10, 11):
-        #     with self.subTest():
-        i = 10
-        test_number = f'{i + 1:02d}'
-        scanner = Scanner(f'test_files/T{test_number}/input.txt')
-        scanner.get_all_tokens()
+        for i in range(10, 13):
+            with self.subTest():
+                test_number = f'{i + 1:02d}'
+                scanner = Scanner(f'test_files/T{test_number}/input.txt')
+                scanner.get_all_tokens()
 
-        self.assert_output_file_equal(test_number, 'tokens')
-        self.assert_output_file_equal(test_number, 'lexical_errors')
-        self.assert_symbol_table_equal(test_number)
+                self.assert_output_file_equal(test_number, 'tokens')
+                self.assert_output_file_equal(test_number, 'lexical_errors')
+                self.assert_symbol_table_equal(test_number)
 
 
 if __name__ == '__main__':

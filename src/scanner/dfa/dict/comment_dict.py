@@ -32,7 +32,8 @@ class COMMENTDFADict(BaseDFADict):
             },
             {
                 'id': 20,
-                'error_type': ErrorType.UNCLOSED_COMMENT
+                'error_type': ErrorType.UNCLOSED_COMMENT,
+                'roll_back': True
             },
             {
                 'id': 21,
