@@ -39,11 +39,12 @@ class NUMCreator(BaseCreator):
             {
                 'state_src_id': 1,
                 'state_dst_id': 2,
-                'symbols': SYMBOLS + WHITESPACES
+                'symbols': self.diff(ALL, LETTERS + DIGITS)
             },
             {
                 'state_src_id': 1,
                 'state_dst_id': 3,
-                'symbols': LETTERS
+                'symbols': self.diff(ALL, LETTERS),
+                'type': TransitionType.EXCLUDE
             }
         ]
