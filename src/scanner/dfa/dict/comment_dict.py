@@ -54,6 +54,6 @@ class COMMENTDFADict(BaseDFADict):
             {'state_src_id': 15, 'state_dst_id': 20, 'symbols': EOF},
             {'state_src_id': 15, 'state_dst_id': 15, 'symbols': STAR + EOF, 'type': TransitionType.EXCLUDE},
             {'state_src_id': 16, 'state_dst_id': 15, 'symbols': STAR + EOF, 'type': TransitionType.EXCLUDE},
-            {'state_src_id': 14, 'state_dst_id': 21, 'symbols': SLASH + STAR, 'type': TransitionType.EXCLUDE},
+            {'state_src_id': 14, 'state_dst_id': 21, 'symbols': diff(ALL, SLASH + STAR)},
             {'state_src_id': 18, 'state_dst_id': 18, 'symbols': EOF + NEW_LINE, 'type': TransitionType.EXCLUDE}
         ]
