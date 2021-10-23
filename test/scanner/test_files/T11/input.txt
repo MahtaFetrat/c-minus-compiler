@@ -1,0 +1,9 @@
+int myFunc(void myVar){
+if (myVar==3){anId = "hello"}
+else{
+theBoolean = 8<<6;
+/*as if its bug less
+and all fine
+*///*/
+}
+}

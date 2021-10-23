@@ -1,0 +1,12 @@
+0.	int
+1.	anId
+2.	if
+3.	theBoolean
+4.	break
+5.	return
+6.	void
+7.	until
+8.	myFunc
+9.	repeat
+10.	else
+11.	myVar
