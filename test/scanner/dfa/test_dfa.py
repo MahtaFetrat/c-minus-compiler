@@ -18,24 +18,25 @@ class TestDFA(unittest.TestCase):
         self.assertEqual(State(0), self._language_dfa.start_state)
 
     def test_iterate_simple_dfa(self):
-        self._test_terminal_is_final(self._simple_dfa, '9199', False, TokenType.NUM, 1)
-        self._test_terminal_is_error(self._simple_dfa, '9199e', ErrorType.INVALID_INPUT, 1)
+        self.assert_terminal_is_final(self._simple_dfa, '9199', False, TokenType.NUM, 1)
+        self.assert_terminal_is_error(self._simple_dfa, '9199e', ErrorType.INVALID_INPUT, 1)
 
     def test_iterate_keyid_dfa(self):
-        self._test_terminal_is_final(self._keyid_dfa, 'a1b2c3=', True, TokenType.KEYID, 2)
-        self._test_terminal_is_error(self._keyid_dfa, 'a1b2@', ErrorType.INVALID_INPUT, 1)
+        self.assert_terminal_is_final(self._keyid_dfa, 'a1b2c3=', True, TokenType.KEYID, 2)
+        self.assert_terminal_is_error(self._keyid_dfa, 'a1b2@', ErrorType.INVALID_INPUT, 1)
 
     def test_language_dfa(self):
-        self._test_terminal_is_final(self._language_dfa, 'a1b2 ', True, TokenType.KEYID, 5)
-        self._test_terminal_is_final(self._language_dfa, '/*ab*/', False, TokenType.COMMENT, 17)
-        self._test_terminal_is_final(self._language_dfa, '==', False, TokenType.SYMBOL, 12)
-        self._test_terminal_is_final(self._language_dfa, '// ab \n', True, TokenType.COMMENT, 19)
-        self._test_terminal_is_error(self._language_dfa, '/*ab\n', ErrorType.UNCLOSED_COMMENT, 21)
-        self._test_terminal_is_error(self._language_dfa, '*/', ErrorType.UNMATCHED_COMMENT, 7)
-        self._test_terminal_is_error(self._language_dfa, '12@', ErrorType.INVALID_INPUT, 1)
-        self._test_terminal_is_error(self._language_dfa, '12d', ErrorType.INVALID_NUMBER, 3)
+        self.assert_terminal_is_final(self._language_dfa, 'a1b2 ', True, TokenType.KEYID, 5)
+        self.assert_terminal_is_final(self._language_dfa, '/*ab*/', False, TokenType.COMMENT, 17)
+        self.assert_terminal_is_final(self._language_dfa, '==', False, TokenType.SYMBOL, 12)
+        self.assert_terminal_is_final(self._language_dfa, '// ab \n', True, TokenType.COMMENT, 19)
+        self.assert_terminal_is_error(self._language_dfa, '/*ab\0', ErrorType.UNCLOSED_COMMENT, 20)
+        self.assert_terminal_is_error(self._language_dfa, '*/', ErrorType.UNMATCHED_COMMENT, 7)
+        self.assert_terminal_is_error(self._language_dfa, '12@', ErrorType.INVALID_INPUT, 1)
+        self.assert_terminal_is_error(self._language_dfa, '12d', ErrorType.INVALID_NUMBER, 3)
+        self.assert_terminal_is_error(self._language_dfa, '*@', ErrorType.INVALID_INPUT, 6)
 
-    def _test_terminal_is_final(self, dfa, string, roll_back, token_type, dest_id):
+    def assert_terminal_is_final(self, dfa, string, roll_back, token_type, dest_id):
         dfa.iterate(string)
         self.assertEqual(dfa.terminal_state, State(dest_id))
         self.assertFalse(dfa.terminal_state.is_error())
@@ -43,7 +44,7 @@ class TestDFA(unittest.TestCase):
         self.assertEqual(dfa.terminal_state.roll_back, roll_back)
         self.assertEqual(dfa.terminal_state.token_type, token_type)
 
-    def _test_terminal_is_error(self, dfa, string, error_type, dest_id):
+    def assert_terminal_is_error(self, dfa, string, error_type, dest_id):
         dfa.iterate(string)
         self.assertEqual(dfa.terminal_state, State(dest_id))
         self.assertTrue(dfa.terminal_state.is_error())

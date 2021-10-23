@@ -1,4 +1,25 @@
+from functools import reduce
+from operator import concat
+
+from src.scanner.dfa.dict import *
 from src.scanner.dfa.state import State
+
+
+class DFADict(BaseDFADict):
+    __all__ = [
+        InitialDict, NUMDFADict,
+        KEYIDDFADict, STARDFADict,
+        SYMBOLDFADict, EQUALDFADict,
+        COMMENTDFADict, WHITESPACEDFADict
+    ]
+
+    @property
+    def states(self) -> List[Dict[str, Any]]:
+        return list(reduce(concat, [x().states for x in self.__all__]))
+
+    @property
+    def transitions(self) -> List[Dict[str, Any]]:
+        return list(reduce(concat, [x().transitions for x in self.__all__]))
 
 
 class DFA:

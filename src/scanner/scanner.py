@@ -1,6 +1,5 @@
 from src.scanner.file_handler import FileHandler
-from src.scanner.dfa import Builder
-from src.scanner.utils.dfa import DFA_DICT
+from src.scanner.dfa import Builder, DFADict
 from src.scanner.utils import TokenType, Language
 
 
@@ -8,7 +7,7 @@ class Scanner:
 
     def __init__(self, file):
         self._file_handler = FileHandler(file)
-        self._dfa = Builder(DFA_DICT).build_dfa()
+        self._dfa = Builder(DFADict()).build_dfa()
 
     @property
     def line_num(self):
