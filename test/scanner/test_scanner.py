@@ -34,8 +34,19 @@ class TestScanner(unittest.TestCase):
             actual_table_set = read_symbol_table_file_as_set(actual_table_content)
             self.assertEqual(expected_table_set, actual_table_set)
 
-    def test_scanner(self):
+    def test_scanner_set1(self):
         for i in range(10):
+            with self.subTest():
+                test_number = f'{i + 1:02d}'
+                scanner = Scanner(f'test_files/T{test_number}/input.txt')
+                scanner.get_all_tokens()
+
+                self.assert_output_file_equal(test_number, 'tokens')
+                self.assert_output_file_equal(test_number, 'lexical_errors')
+                self.assert_symbol_table_equal(test_number)
+
+    def test_scanner_set2(self):
+        for i in range(10, 13):
             with self.subTest():
                 test_number = f'{i + 1:02d}'
                 scanner = Scanner(f'test_files/T{test_number}/input.txt')

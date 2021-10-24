@@ -1,0 +1,6 @@
+1.	(KEYWORD, int) (ID, myFunc) (SYMBOL, () (KEYWORD, void) (ID, myVar) (SYMBOL, )) (SYMBOL, {) 
+2.	(KEYWORD, if) (SYMBOL, () (ID, myVar) (SYMBOL, ==) (NUM, 3) (SYMBOL, )) (SYMBOL, {) (ID, anId) (SYMBOL, =) (SYMBOL, }) 
+3.	(KEYWORD, else) (SYMBOL, {) 
+4.	(ID, theBoolean) (SYMBOL, =) (NUM, 8) (SYMBOL, <) (SYMBOL, <) (NUM, 6) (SYMBOL, ;) 
+8.	(SYMBOL, }) 
+9.	(SYMBOL, }) 

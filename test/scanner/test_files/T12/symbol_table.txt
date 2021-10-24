@@ -1,0 +1,14 @@
+0.	array
+1.	void
+2.	break
+3.	int
+4.	w
+5.	a
+6.	hello
+7.	if
+8.	until
+9.	repeat
+10.	return
+11.	e
+12.	else
+13.	g

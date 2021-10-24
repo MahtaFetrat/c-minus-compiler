@@ -1,0 +1,5 @@
+6.	(ID, array) (SYMBOL, =) (SYMBOL, [) (ID, a) (SYMBOL, ,) (ID, g) (SYMBOL, ,) (ID, g) (SYMBOL, ,) (ID, w) (SYMBOL, ]) (SYMBOL, ;) 
+10.	(KEYWORD, if) (ID, a) (SYMBOL, *) (NUM, 4) (SYMBOL, =) (NUM, 1) (SYMBOL, :) 
+11.	(ID, a) (SYMBOL, -) (ID, e) (SYMBOL, ==) (ID, w) (SYMBOL, ;) (SYMBOL, ;) 
+14.	(ID, hello) 
+15.	(SYMBOL, }) 
