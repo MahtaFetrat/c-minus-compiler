@@ -39,6 +39,6 @@ class EQUALDFADict(BaseDFADict):
             {
                 'state_src_id': 11,
                 'state_dst_id': 13,
-                'symbols': ALL
+                'symbols': diff(ALL, EQUAL)
             },
         ]
