@@ -1,0 +1,8 @@
+2.	(NUM, 124) (SYMBOL, )) 
+4.	(ID, Q100) 
+7.	(NUM, 7) 
+8.	(ID, unc) 
+11.	(ID, n) 
+12.	(KEYWORD, break) (SYMBOL, <) (SYMBOL, =) (NUM, 12) 
+13.	(SYMBOL, {) (KEYWORD, return) (SYMBOL, -) (SYMBOL, -) 
+14.	(ID, nevermind) (SYMBOL, =) (SYMBOL, <) 
