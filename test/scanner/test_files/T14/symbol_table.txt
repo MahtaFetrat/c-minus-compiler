@@ -1,9 +1,9 @@
-0.	if
-1.	int
-2.	return
-3.	until
+0.	return
+1.	break
+2.	until
+3.	void
 4.	repeat
-5.	void
-6.	break
+5.	int
+6.	if
 7.	else
 
