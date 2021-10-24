@@ -1,0 +1,9 @@
+0.	if
+1.	int
+2.	return
+3.	until
+4.	repeat
+5.	void
+6.	break
+7.	else
+
