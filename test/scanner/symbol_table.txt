@@ -1,8 +1,0 @@
-0.	break
-1.	void
-2.	int
-3.	return
-4.	if
-5.	until
-6.	repeat
-7.	else

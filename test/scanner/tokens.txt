@@ -1,8 +1,0 @@
-1.	(SYMBOL, +) 
-2.	(SYMBOL, +) 
-3.	(SYMBOL, +) (SYMBOL, -) 
-6.	(SYMBOL, =) (SYMBOL, +) 
-7.	(SYMBOL, ==) 
-10.	(SYMBOL, *) (SYMBOL, +) 
-11.	(SYMBOL, *) (SYMBOL, *) 
-14.	(SYMBOL, +) 
