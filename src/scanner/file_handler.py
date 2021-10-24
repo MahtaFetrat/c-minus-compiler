@@ -1,6 +1,6 @@
 """This module provides an interface for the scanner to work with I/O files."""
 
-from src.scanner.utils.enums import Language
+from .utils.enums import Language
 
 
 # pylint: disable=consider-using-with

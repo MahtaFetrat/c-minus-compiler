@@ -1,5 +1,6 @@
-from src.scanner.dfa import State, Transition
-from src.scanner.dfa.dfa import DFA
+from .state import State
+from .transition import Transition
+from .dfa import DFA
 
 
 class Builder:

@@ -1,7 +1,7 @@
 from typing import List
 
-from src.scanner.utils.enums import TokenType, ErrorType
-from src.scanner.dfa.transition import Transition
+from ..utils.enums import TokenType, ErrorType
+from .transition import Transition
 
 
 class State:

@@ -1,8 +1,8 @@
 from functools import reduce
 from operator import concat
 
-from src.scanner.dfa.dict import *
-from src.scanner.dfa.state import State
+from .dict import *
+from .state import State
 
 
 class DFADict(BaseDFADict):

@@ -1,5 +1,5 @@
-from src.scanner.dfa.dict.base import *
-from src.scanner.utils import *
+from .base import *
+from ...utils import *
 
 
 class InitialDict(BaseDFADict):

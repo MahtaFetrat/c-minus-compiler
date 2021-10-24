@@ -1,6 +1,6 @@
 from typing import List
 
-from src.scanner.utils.enums import *
+from .enums import *
 
 EOF: List[str] = Language.EOF.value()
 STAR: List[str] = Language.STAR.value()

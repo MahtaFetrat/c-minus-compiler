@@ -1,6 +1,6 @@
-from src.scanner.file_handler import FileHandler
-from src.scanner.dfa import Builder, DFADict
-from src.scanner.utils import TokenType, Language
+from .file_handler import FileHandler
+from .dfa import Builder, DFADict
+from .utils import TokenType, Language
 
 
 class Scanner:

@@ -1,6 +1,6 @@
 from typing import List
 
-from src.scanner.utils import TransitionType
+from ..utils import TransitionType
 
 
 class Transition:
