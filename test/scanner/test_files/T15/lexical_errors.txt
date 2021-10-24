@@ -1,0 +1,5 @@
+1.	(12#, Invalid number) 
+2.	(/, Invalid input) 
+3.	(12d, Invalid number) 
+6.	(/, Invalid input) 
+7.	(cd#, Invalid input) 

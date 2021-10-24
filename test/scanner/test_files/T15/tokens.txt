@@ -1,0 +1,4 @@
+2.	(NUM, 12) 
+4.	(NUM, 12) 
+6.	(ID, cd) 
+9.	(ID, idAtEof) 

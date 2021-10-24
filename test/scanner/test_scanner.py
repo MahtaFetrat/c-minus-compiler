@@ -46,7 +46,7 @@ class TestScanner(unittest.TestCase):
                 self.assert_symbol_table_equal(test_number)
 
     def test_scanner_set2(self):
-        for i in range(10, 14):
+        for i in range(10, 15):
             with self.subTest():
                 test_number = f'{i + 1:02d}'
                 scanner = Scanner(f'test_files/T{test_number}/input.txt')

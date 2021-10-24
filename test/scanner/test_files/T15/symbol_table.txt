@@ -1,0 +1,11 @@
+0.	int
+1.	idAtEof
+2.	void
+3.	break
+4.	cd
+5.	repeat
+6.	return
+7.	if
+8.	else
+9.	until
+
