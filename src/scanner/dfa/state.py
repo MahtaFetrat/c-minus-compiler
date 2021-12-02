@@ -1,10 +1,11 @@
 from typing import List
 
+from src.base import Node
 from src.scanner.utils.enums import TokenType, ErrorType
 from src.scanner.dfa.transition import Transition
 
 
-class State:
+class State(Node):
 
     def __init__(self, state_id,
                  token_type: TokenType = TokenType.NONE,
@@ -12,9 +13,8 @@ class State:
                  transitions: List[Transition] = None,
                  roll_back: bool = False):
 
-        self.state_id = state_id
+        super().__init__(state_id, transitions)
         self._roll_back = roll_back or False
-        self._transitions = transitions or []
         self._token_type = token_type or TokenType.NONE
         self._error_type = error_type or ErrorType.NONE
         self.__cleanup__()
@@ -24,21 +24,12 @@ class State:
                 and self._error_type != ErrorType.NONE:
             raise AttributeError('None error type with none final type is invalid')
 
-    def __eq__(self, other):
-        return bool(self.state_id == other.state_id)
-
-    def __str__(self):
-        return str(self.state_id)
-
     def transfer(self, character: str):
         try:
-            state = list(filter(lambda x: x.is_valid(character), self._transitions))[0].dest_state
+            state = list(filter(lambda x: x.is_valid(character), self._edges))[0].dest
             return state
         except IndexError:
-            return InvalidState(self.state_id)
-
-    def add_transition(self, transition: Transition):
-        self._transitions.append(transition)
+            return InvalidState(self.identifier)
 
     def is_final(self) -> bool:
         return self._token_type != TokenType.NONE
@@ -55,7 +46,7 @@ class State:
 
     @property
     def transitions(self):
-        return self._transitions.copy()
+        return self._edges.copy()
 
     @property
     def token_type(self):
