@@ -13,5 +13,8 @@ class Transition(Edge):
         self.symbol = create_symbol(name, symbol_type, predicts)
         super().__init__([self.symbol], dest)
 
+    def accept(self, lookahead, scanner):
+        return self.symbol.accept(lookahead, scanner), self.dest
+
     def is_valid(self, character: str):
         return self.symbol.handle(character)
