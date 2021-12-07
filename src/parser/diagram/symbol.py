@@ -3,13 +3,13 @@ from typing import List
 
 from src.parser.utils import SymbolType
 from src.parser.tree import Tree
-from src.parser.parser import Parser
 
 
 class Symbol(ABC):
-    def __init__(self, name: str, predicts: List[str]):
+    def __init__(self, name: str, predicts: List[str], diagram=None):
         self.name = name
         self.predicts = predicts
+        self.diagram = diagram
 
     def handle(self, character: str) -> bool:
         return bool(character in self.predicts)
@@ -25,11 +25,10 @@ class Terminal(Symbol):
 
 class NonTerminal(Symbol):
     def __init__(self, name: str, predicts: List[str]):
-        self._diagram = Parser.get_diagram_by_name(name)
         super().__init__(name, predicts)
 
     def accept(self, lookahead, scanner):
-        return self._diagram.accept(lookahead, scanner)
+        return self.diagram.accept(lookahead, scanner)
 
 
 class Epsilon(Symbol):

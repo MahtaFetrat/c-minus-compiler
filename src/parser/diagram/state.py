@@ -1,14 +1,13 @@
 from typing import List
 
 from src.base import Node
-from src.parser.diagram.transition import Transition
 
 
 class State(Node):
     def __init__(self,
                  identifier: int,
                  final: bool = False,
-                 transitions: List[Transition] = None):
+                 transitions=None):
         self.final = final
         super(State, self).__init__(identifier, transitions)
 
