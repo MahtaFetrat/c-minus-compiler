@@ -10,11 +10,11 @@ class Builder:
         self._diagram = {}
         self._states = {}
 
-    def build_transition_diagrams(self):
+    def build_transition_diagram(self):
         for rule in self._diagram_dict:
             self._build_rule_states(rule["states"])
-            self._build_rule_transitions(rule["transitions"])
             self._build_rule_diagram(rule)
+            self._build_rule_transitions(rule["transitions"])
         return self._diagram
 
     def _build_rule_states(self, states):
@@ -30,6 +30,7 @@ class Builder:
                 name=tr["name"],
                 symbol_type=SymbolType(tr["type"]),
                 predicts=tr["predict"],
+                diagram=self._diagram.get(tr["name"], None),
             )
             self._states[tr["state_src_id"]].add_transition(transition)
 

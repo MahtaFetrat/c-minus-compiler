@@ -24,9 +24,6 @@ class Terminal(Symbol):
 
 
 class NonTerminal(Symbol):
-    def __init__(self, name: str, predicts: List[str]):
-        super().__init__(name, predicts)
-
     def accept(self, lookahead, scanner):
         return self.diagram.accept(lookahead, scanner)
 
@@ -43,5 +40,7 @@ __ALL = {
 }
 
 
-def create_symbol(name, symbol_type: SymbolType, predicts: List[str] = None):
-    return __ALL[symbol_type](name, predicts)
+def create_symbol(
+    name, symbol_type: SymbolType, predicts: List[str] = None, diagram=None
+):
+    return __ALL[symbol_type](name, predicts, diagram)

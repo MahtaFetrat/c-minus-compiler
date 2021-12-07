@@ -3,12 +3,8 @@ from src.parser.diagram.symbol import create_symbol
 
 
 class Transition(Edge):
-
-    def __init__(self, dest,
-                 name,
-                 predicts: List[str],
-                 symbol_type):
-        self.symbol = create_symbol(name, symbol_type, predicts)
+    def __init__(self, dest, name, predicts: List[str], symbol_type, diagram=None):
+        self.symbol = create_symbol(name, symbol_type, predicts, diagram)
         super().__init__([self.symbol], dest)
 
     def accept(self, lookahead, scanner):
