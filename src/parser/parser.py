@@ -1,5 +1,5 @@
 from src.parser.diagram.builder import Builder
-from src.parser.diagram.dict.dict import TRANSITION_DIAGRAM
+from src.parser.diagram.dict.dict import Dict
 from src.scanner.scanner import Scanner
 
 
@@ -9,7 +9,7 @@ class Parser:
     def __init__(self, input_filename):
         self._scanner = Scanner(input_filename)
         self._transition_diagram = Builder(
-            TRANSITION_DIAGRAM
+            Dict().get_transition_diagram_dict()
         ).build_transition_diagram()
 
     def parse(self):

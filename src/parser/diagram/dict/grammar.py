@@ -1,5 +1,4 @@
 import re
-from pprint import pprint
 
 GRAMMAR = """1. Program -> Declaration-list $
 2. Declaration-list -> Declaration Declaration-list | EPSILON
@@ -48,59 +47,63 @@ GRAMMAR = """1. Program -> Declaration-list $
 45. Arg-list-prime -> , Expression Arg-list-prime | EPSILON"""
 
 
-def get_ui_input():
-    converted_grammar = ""
+def sub_illegal_characters(rule, dollar_sign, epsilon):
+    rule = re.sub(r"\$", dollar_sign, rule)
+    rule = re.sub("EPSILON", epsilon, rule)
+    rule = re.sub(r"([^-]*\w)-(\w[^-])", r"\1_\2", rule)
+    rule = re.sub(r"[0-9]+\. ", "", rule)
+    return rule
+
+
+def get_left_hand_side(rule):
+    return re.search(r"(.*)->", rule).group(1)
+
+
+def get_right_hand_sides(rule):
+    return re.search(r".*->(.*)", rule).group(1).split("|")
+
+
+def get_rules(dollar_sign, epsilon):
+    """Returns the grammar in tuples of lhs and rhs rules.
+    special characters (i.e. $ and epsilon) are converted to the desired char."""
+    rules = []
     for rule in GRAMMAR.splitlines():
-        rule = re.sub(r"\$", "┤", rule)
-        rule = re.sub("EPSILON", "ε", rule)
-        rule = re.sub(r"([^-]*\w)-(\w[^-])", r"\1_\2", rule)
-        rule = re.sub(r"[0-9]+\. ", "", rule)
-        left = re.search(r"(.*)->", rule).group(1)
-        rights = re.search(r".*->(.*)", rule).group(1).split("|")
-        for r in rights:
-            converted_grammar += left + r + "\n"
-        return converted_grammar
+        rule = sub_illegal_characters(rule, dollar_sign=dollar_sign, epsilon=epsilon)
+        left = get_left_hand_side(rule).strip()
+        rights = [right.strip() for right in get_right_hand_sides(rule)]
+        rules.append((left, rights))
+    return rules
+
+
+def get_ui_input():
+    """Get valid input for https://mikedevice.github.io/first-follow/ GUI input."""
+    result = ""
+    for left, rights in get_rules(dollar_sign="┤", epsilon="ε"):
+        result += "\n".join([f"{left} {right}" for right in rights])
+    return result
 
 
 def get_js_dict():
-    rule_dicts = "[\n"
-    for rule in GRAMMAR.splitlines():
-        rule = re.sub(r"\$", "\\\\u0000", rule)
-        rule = re.sub("EPSILON", "null", rule)
-        rule = re.sub(r"([^-]*\w)-(\w[^-])", r"\1_\2", rule)
-        rule = re.sub(r"[0-9]+\. ", "", rule)
-        left = re.search(r"(.*)->", rule).group(1)
-        rights = re.search(r".*->(.*)", rule).group(1).split("|")
-        for r in rights:
-            r = r.strip()
-            rule_dict = "\t{\n\t\tleft: '" + left.strip() + "',\n\t\tright: ["
-            for r_part in r.split(" "):
-                rule_dict += "'" + r_part + "'," if r_part != "null" else r_part
-            rule_dict += "]\n\t},\n"
-            rule_dicts += rule_dict
-    rule_dicts += "]\n"
-    return rule_dicts
+    """Get valid input for https://mikedevice.github.io/first-follow/ code input."""
+    rule_dict_format = "\t{{\n\t\tleft: '{left}',\n\t\tright: [{rhs_words}]\n\t}},\n"
+    rule_dicts = ""
+    for left, rights in get_rules(dollar_sign="\\\\u0000", epsilon="null"):
+        for right in rights:
+            rhs_words = ", ".join([f"'{word}'" for word in right.split(" ")])
+            rhs_words = re.sub("'null'", "null", rhs_words)
+            rule_dicts += rule_dict_format.format(left=left, rhs_words=rhs_words)
+    return f"[\n{rule_dicts}\n]"
 
 
 def get_production_rules():
+    """Get a dict of rule_names to their enumerated production_rules.
+    Every production rule is returned as a list of its space-separated terminals and non-terminals."""
     production_rules = {}
-    production_rules_no = 0
-    for rule in GRAMMAR.splitlines():
-        rule = re.sub(r"\$", "┤", rule)
-        rule = re.sub("EPSILON", "ε", rule)
-        rule = re.sub(r"([^-]*\w)-(\w[^-])", r"\1_\2", rule)
-        rule = re.sub(r"[0-9]+\. ", "", rule)
-        left = re.search(r"(.*)->", rule).group(1)
-        rights = re.search(r".*->(.*)", rule).group(1).split("|")
-        production_rules[left.strip()] = (
-            left.strip(),
-            [
-                (
-                    production_rules_no + production_rule_no + 1,
-                    right.strip().split(" "),
-                )
-                for production_rule_no, right in enumerate(rights)
-            ],
-        )
-        production_rules_no += len(rights)
+    production_rule_no = 0
+    for left, rights in get_rules(dollar_sign="┤", epsilon="ε"):
+        production_rules[left] = [
+            (production_rule_no + i + 1, right.split(" "))
+            for i, right in enumerate(rights)
+        ]
+        production_rule_no += len(rights)
     return production_rules
