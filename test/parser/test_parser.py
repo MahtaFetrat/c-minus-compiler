@@ -11,6 +11,5 @@ class TestParser(unittest.TestCase):
         print(tree.get_printable_tree())
 
 
-
 if __name__ == '__main__':
     unittest.main()
