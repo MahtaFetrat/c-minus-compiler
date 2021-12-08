@@ -11,7 +11,11 @@ class Transition(Edge):
         super().__init__([self.symbol], dest)
 
     def accept(self, lookahead, scanner):
-        return self.symbol.accept(lookahead, scanner), self.dest
+        tree, lookahead = self.symbol.accept(lookahead, scanner)
+        return tree, lookahead, self.dest
 
     def is_valid(self, lookahead):
         return self.symbol.handle(lookahead)
+
+    def __str__(self):
+        return str(self.symbol)

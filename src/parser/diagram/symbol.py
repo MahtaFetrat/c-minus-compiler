@@ -13,10 +13,13 @@ class Symbol(ABC):
 
     def handle(self, lookahead) -> bool:
         token_type, token_string = lookahead
-        return bool(token_type.name in self.predicts or token_string in self.predicts)
+        return bool(token_type in self.predicts or token_string in self.predicts)
 
     def accept(self, lookahead, scanner):
         raise NotImplementedError
+
+    def __str__(self):
+        return self.name + " {" + ", ".join(self.predicts) + "}"
 
 
 class Terminal(Symbol):
@@ -26,7 +29,8 @@ class Terminal(Symbol):
 
 class NonTerminal(Symbol):
     def accept(self, lookahead, scanner):
-        return self.diagram.accept(lookahead, scanner)
+        tree, lookahead, _ = self.diagram.accept(lookahead, scanner)
+        return tree, lookahead
 
 
 class Epsilon(Symbol):

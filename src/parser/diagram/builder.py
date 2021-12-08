@@ -14,6 +14,7 @@ class Builder:
         for rule in self._diagram_dict:
             self._build_rule_states(rule["states"])
             self._build_rule_diagram(rule)
+        for rule in self._diagram_dict:
             self._build_rule_transitions(rule["transitions"])
         return self._diagram
 
