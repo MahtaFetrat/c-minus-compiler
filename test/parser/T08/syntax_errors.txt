@@ -1,2 +1,0 @@
-#5 : syntax error, illegal *
-#7 : syntax error, missing Factor

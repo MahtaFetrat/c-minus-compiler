@@ -61,6 +61,15 @@ class Scanner:
     def _is_keyword(token_string):
         return token_string in Language.KEYWORDS.value()
 
+    def get_all_tokens(self):
+        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
+        while True:
+            try:
+                self.get_next_token()
+            except StopIteration:
+                self.close()
+                break
+
     def get_next_token(self):
         try:
             if next_token := self._write_next_terminal_state():

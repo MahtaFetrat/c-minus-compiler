@@ -8,6 +8,10 @@ class Tree:
 
     def get_printable_tree(self, parent=None):
         root = Node(self.root_name, parent=parent)
+        print(root)
         for subtree in self.subtrees:
             subtree.get_printable_tree(root)
         return root
+
+    def print(self):
+        print(self.root_name)

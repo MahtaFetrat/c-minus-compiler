@@ -16,7 +16,7 @@ class TestBuilder(unittest.TestCase):
         self.assertIn(Transition(['1'], State(0)), transitions)
         self.assertIn(Transition(['9'], State(1)), transitions)
 
-        final_state_transitions = dfa.start_state.transitions[0].dest_state
+        final_state_transitions = dfa.start_state.transitions[0].dest
         self.assertIn(
             Transition(['1', '9'], State(1)), final_state_transitions.transitions
         )

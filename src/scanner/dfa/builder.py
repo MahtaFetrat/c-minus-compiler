@@ -32,7 +32,7 @@ class Builder:
         for transition in self._dfa_dict['transitions']:
             new_transition = Transition(
                 symbols=transition['symbols'],
-                dest_state=states[transition['state_dst_id']],
+                dest=states[transition['state_dst_id']],
                 transition_type=transition.get('type')
             )
             states[transition['state_src_id']].add_transition(new_transition)
