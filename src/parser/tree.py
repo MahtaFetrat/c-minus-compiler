@@ -7,7 +7,7 @@ class Tree:
         self.subtrees = subtrees or []
 
     def get_printable_tree(self, parent=None):
-        root = Node(self.root_name, parent)
+        root = Node(self.root_name, parent=parent)
         for subtree in self.subtrees:
-            subtree._build_printable_tree(root)
+            subtree.get_printable_tree(root)
         return root

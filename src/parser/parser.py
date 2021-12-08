@@ -14,8 +14,5 @@ class Parser:
 
     def parse(self):
         diagram = self._transition_diagram[Parser.START_STATE]
-        return diagram.accept(self._scanner.get_next_token(), self._scanner)
-
-
-p = Parser("input.txt")
-print(p.parse())
+        tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner)
+        return tree
