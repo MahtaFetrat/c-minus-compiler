@@ -11,8 +11,9 @@ class Symbol(ABC):
         self.predicts = predicts
         self.diagram = diagram
 
-    def handle(self, character: str) -> bool:
-        return bool(character in self.predicts)
+    def handle(self, lookahead) -> bool:
+        token_type, token_string = lookahead
+        return bool(token_type.name in self.predicts or token_string in self.predicts)
 
     def accept(self, lookahead, scanner):
         raise NotImplementedError
@@ -20,7 +21,7 @@ class Symbol(ABC):
 
 class Terminal(Symbol):
     def accept(self, lookahead, scanner):
-        return Tree(self.name, None), scanner.get_next_token()
+        return Tree(str(lookahead), None), scanner.get_next_token()
 
 
 class NonTerminal(Symbol):
@@ -30,7 +31,7 @@ class NonTerminal(Symbol):
 
 class Epsilon(Symbol):
     def accept(self, lookahead, scanner):
-        return None, lookahead
+        return Tree("epsilon", None), lookahead
 
 
 __ALL = {

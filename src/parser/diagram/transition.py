@@ -10,5 +10,5 @@ class Transition(Edge):
     def accept(self, lookahead, scanner):
         return self.symbol.accept(lookahead, scanner), self.dest
 
-    def is_valid(self, character: str):
-        return self.symbol.handle(character)
+    def is_valid(self, lookahead):
+        return self.symbol.handle(lookahead)
