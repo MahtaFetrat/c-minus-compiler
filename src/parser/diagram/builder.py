@@ -11,6 +11,8 @@ class Builder:
         self._states = {}
 
     def build_transition_diagram(self):
+        """Builds the transition diagram of the input dictionary of the transition diagram
+        as a dictionary of Non-Terminal names and their Diagram object."""
         for rule in self._diagram_dict:
             self._build_rule_states(rule["states"])
             self._build_rule_diagram(rule)

@@ -64,6 +64,8 @@ def get_right_hand_sides(rule):
 
 
 def get_rules(dollar_sign, epsilon):
+    """Returns the grammar in tuples of lhs and rhs rules.
+    special characters (i.e. $ and epsilon) are converted to the desired char."""
     rules = []
     for rule in GRAMMAR.splitlines():
         rule = sub_illegal_characters(rule, dollar_sign=dollar_sign, epsilon=epsilon)
@@ -74,6 +76,7 @@ def get_rules(dollar_sign, epsilon):
 
 
 def get_ui_input():
+    """Get valid input for https://mikedevice.github.io/first-follow/ GUI input."""
     result = ""
     for left, rights in get_rules(dollar_sign="┤", epsilon="ε"):
         result += "\n".join([f"{left} {right}" for right in rights])
@@ -81,6 +84,7 @@ def get_ui_input():
 
 
 def get_js_dict():
+    """Get valid input for https://mikedevice.github.io/first-follow/ code input."""
     rule_dict_format = "\t{{\n\t\tleft: '{left}',\n\t\tright: [{rhs_words}]\n\t}},\n"
     rule_dicts = ""
     for left, rights in get_rules(dollar_sign="\\\\u0000", epsilon="null"):
@@ -92,6 +96,8 @@ def get_js_dict():
 
 
 def get_production_rules():
+    """Get a dict of rule_names to their enumerated production_rules.
+    Every production rule is returned as a list of its space-separated terminals and non-terminals."""
     production_rules = {}
     production_rule_no = 0
     for left, rights in get_rules(dollar_sign="┤", epsilon="ε"):

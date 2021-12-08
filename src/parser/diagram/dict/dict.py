@@ -424,6 +424,7 @@ class Dict:
             self._build_rule_diagram_dict(rule_name, production_rules)
 
     def get_transition_diagram_dict(self):
+        """Returns a dictionary of the transition diagram for the grammar in grammar.py"""
         if not self._transition_diagram:
             self._build_transition_diagram_dict()
         return self._transition_diagram
