@@ -83,7 +83,7 @@ def get_js_dict():
 
 
 def get_production_rules():
-    production_rules = []
+    production_rules = {}
     production_rules_no = 0
     for rule in GRAMMAR.splitlines():
         rule = re.sub(r"\$", "┤", rule)
@@ -92,17 +92,15 @@ def get_production_rules():
         rule = re.sub(r"[0-9]+\. ", "", rule)
         left = re.search(r"(.*)->", rule).group(1)
         rights = re.search(r".*->(.*)", rule).group(1).split("|")
-        production_rules.append(
-            (
-                left.strip(),
-                [
-                    (
-                        production_rules_no + production_rule_no + 1,
-                        right.strip().split(" "),
-                    )
-                    for production_rule_no, right in enumerate(rights)
-                ],
-            )
+        production_rules[left.strip()] = (
+            left.strip(),
+            [
+                (
+                    production_rules_no + production_rule_no + 1,
+                    right.strip().split(" "),
+                )
+                for production_rule_no, right in enumerate(rights)
+            ],
         )
         production_rules_no += len(rights)
     return production_rules

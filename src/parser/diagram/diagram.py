@@ -13,8 +13,11 @@ class Diagram:
             transition = state.transfer(lookahead)
             tree, lookahead, state = transition.accept(lookahead, scanner)
             self._subtrees.append(tree)
-        return Tree(self.name, self._subtrees), lookahead
+        return Tree(self.name, self._subtrees), lookahead, state
 
     @property
     def tree(self):
         return list(map(lambda node: node.name, self._subtrees))
+
+    def __str__(self):
+        return self.name

@@ -62,19 +62,12 @@ class Scanner:
         return token_string in Language.KEYWORDS.value()
 
     def get_next_token(self):
-        """:raises StopIteration: if end of input file reached."""
-        if next_token := self._write_next_terminal_state():
-            return next_token
-        return self.get_next_token()
+        try:
+            if next_token := self._write_next_terminal_state():
+                return next_token
+            return self.get_next_token()
+        except StopIteration:
+            return TokenType.SYMBOL.name, "$"
 
     def close(self):
         self._file_handler.close()
-
-    def get_all_tokens(self):
-        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
-        while True:
-            try:
-                self.get_next_token()
-            except StopIteration:
-                self.close()
-                break
