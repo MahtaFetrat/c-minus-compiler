@@ -7,7 +7,7 @@ from src.parser.tree import Tree
 
 class Symbol(ABC):
     def __init__(
-            self, name: str, predicts: List[str], follows: List[str], diagram=None
+        self, name: str, predicts: List[str], follows: List[str], diagram=None
     ):
         self.name = name
         self.predicts = predicts
@@ -31,7 +31,12 @@ class Symbol(ABC):
 
 class Terminal(Symbol):
     def accept(self, lookahead, scanner):
-        return Tree(str(lookahead), None), scanner.get_next_token()
+        return Tree(Terminal.token_repr(lookahead), None), scanner.get_next_token()
+
+    @staticmethod
+    def token_repr(lookahead):
+        token_type, token_str = lookahead
+        return f"({str(token_type)}, {token_str})" if token_str != "$" else "$"
 
 
 class NonTerminal(Symbol):
@@ -53,7 +58,10 @@ __all__ = {
 
 
 def create_symbol(
-        name, symbol_type: SymbolType,
-        predicts: List[str] = None, follows: List[str] = None, diagram=None
+    name,
+    symbol_type: SymbolType,
+    predicts: List[str] = None,
+    follows: List[str] = None,
+    diagram=None,
 ):
     return __all__[symbol_type](name, predicts, follows, diagram)
