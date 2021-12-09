@@ -1,8 +1,9 @@
+from src.parser.diagram import State
 from src.parser.tree import Tree
 
 
 class Diagram:
-    def __init__(self, name, start_node):
+    def __init__(self, name: str, start_node: State):
         self.name = name
         self.start_node = start_node
         self._subtrees = []
@@ -10,8 +11,7 @@ class Diagram:
     def accept(self, lookahead, scanner):  # TODO: handle error
         state = self.start_node
         while not state.is_final():
-            transition = state.transfer(lookahead)
-            tree, lookahead, state = transition.accept(lookahead, scanner)
+            tree, lookahead, state = state.transfer(lookahead, scanner)
             self._subtrees.append(tree)
         return Tree(self.name, self._subtrees), lookahead, state
 

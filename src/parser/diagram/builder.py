@@ -33,6 +33,7 @@ class Builder:
                 name=tr["name"],
                 symbol_type=SymbolType(tr["type"]),
                 predicts=tr["predict"],
+                follows=tr["follow"],
                 diagram=self._diagram.get(tr["name"], None),
             )
             self._states[tr["state_src_id"]].add_transition(transition)

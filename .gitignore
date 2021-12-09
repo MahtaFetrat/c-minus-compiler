@@ -133,6 +133,11 @@ dmypy.json
 test/scanner/lexical_errors.txt
 test/scanner/symbol_table.txt
 test/scanner/tokens.txt
+test/parser/lexical_errors.txt
+test/parser/symbol_table.txt
+test/parser/tokens.txt
+test/parser/parse_tree.txt
+test/parser/syntax_errors.txt
 
 package-lock.json
 node_modules/
