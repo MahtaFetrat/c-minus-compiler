@@ -70,12 +70,5 @@ class Scanner:
         except StopIteration:
             return TokenType.SYMBOL.name, "$"
 
-    def get_all_tokens(self):
-        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
-        while True:
-            if self.get_next_token() != (TokenType.SYMBOL.name, "$"):
-                self.close()
-                break
-
     def close(self):
         self._file_handler.close()
