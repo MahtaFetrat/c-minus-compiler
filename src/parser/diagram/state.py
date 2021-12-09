@@ -7,7 +7,7 @@ from src.parser.utils import MissingException, IllegalException
 
 class State(Node):
     def __init__(
-            self, identifier: int, final: bool = False, transitions: List[Transition] = None
+        self, identifier: int, final: bool = False, transitions: List[Transition] = None
     ):
         self.final = final
         super(State, self).__init__(identifier, transitions)
@@ -23,11 +23,7 @@ class State(Node):
         except IndexError:
             is_missed, transition = self.check_missing(lookahead)
             exception_cls = MissingException if is_missed else IllegalException
-            raise exception_cls(
-                state=self,
-                lookahead=lookahead,
-                transition=transition
-            )
+            raise exception_cls(state=self, lookahead=lookahead, transition=transition)
 
     def transfer(self, lookahead, scanner=None, parser=None):
         if scanner is None or parser is None:

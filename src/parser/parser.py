@@ -1,6 +1,5 @@
 from src.parser.diagram.builder import Builder
 from src.parser.diagram.dict.diagram_dict import DiagramDict
-from src.parser.utils import ParseException, MissingException
 from src.scanner.scanner import Scanner
 
 
@@ -31,7 +30,9 @@ class Parser:
 
     def write_error(self, error_msg):
         self._syntax_error_encountered = True
-        self._error_out_file.write(f"#{self._scanner.line_num} : syntax error, {error_msg}\n")
+        self._error_out_file.write(
+            f"#{self._scanner.line_num} : syntax error, {error_msg}\n"
+        )
 
     def close(self):
         self._scanner.close()

@@ -5,7 +5,13 @@ from src.parser.utils import SymbolType
 
 class Transition(Edge):
     def __init__(
-        self, dest, name, predicts: List[str], follows: List[str], symbol_type: SymbolType, diagram=None
+        self,
+        dest,
+        name,
+        predicts: List[str],
+        follows: List[str],
+        symbol_type: SymbolType,
+        diagram=None,
     ):
         self.symbol = create_symbol(name, symbol_type, predicts, follows, diagram)
         super().__init__([self.symbol], dest)

@@ -1,7 +1,5 @@
 class ParseException(Exception):
-    def __init__(
-            self, state, lookahead, transition
-    ):
+    def __init__(self, state, lookahead, transition):
         super().__init__()
         self._state = state
         self._transition = transition
