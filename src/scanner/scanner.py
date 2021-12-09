@@ -4,7 +4,6 @@ from src.scanner.utils import TokenType, Language
 
 
 class Scanner:
-
     def __init__(self, file):
         self._file_handler = FileHandler(file)
         self._dfa = Builder(DFADict()).build_dfa()
@@ -16,7 +15,7 @@ class Scanner:
     def _get_next_terminal_state(self, current_state):
         """:raises StopIteration: if end of input file reached."""
         next_char = self._file_handler.get_next_char()
-        if next_char == '\0' and current_state == self._dfa.start_state:
+        if next_char == "\0" and current_state == self._dfa.start_state:
             raise StopIteration
         next_state = current_state.transfer(next_char)
         if not next_state.is_terminal():
@@ -41,12 +40,14 @@ class Scanner:
             return self._write_keyid_state(state)
         if state.token_type in [TokenType.NUM, TokenType.SYMBOL]:
             return self._write_non_keyid_state(state)
-        _, _ = self._file_handler.get_lexeme(roll_back=state.roll_back)  # throw the lexeme away
+        _, _ = self._file_handler.get_lexeme(
+            roll_back=state.roll_back
+        )  # throw the lexeme away
         return None
 
     def _write_keyid_state(self, state):
         _, token_string = self._file_handler.get_lexeme(roll_back=state.roll_back)
-        token_type = 'KEYWORD' if self._is_keyword(token_string) else 'ID'
+        token_type = "KEYWORD" if self._is_keyword(token_string) else "ID"
         self._file_handler.write_token(token_type, token_string)
         self._file_handler.write_symbol(token_string)
         return token_type, token_string
@@ -61,15 +62,6 @@ class Scanner:
     def _is_keyword(token_string):
         return token_string in Language.KEYWORDS.value()
 
-    def get_all_tokens(self):
-        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
-        while True:
-            try:
-                self.get_next_token()
-            except StopIteration:
-                self.close()
-                break
-
     def get_next_token(self):
         try:
             if next_token := self._write_next_terminal_state():
@@ -77,6 +69,13 @@ class Scanner:
             return self.get_next_token()
         except StopIteration:
             return TokenType.SYMBOL.name, "$"
+
+    def get_all_tokens(self):
+        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
+        while True:
+            if self.get_next_token() != (TokenType.SYMBOL.name, "$"):
+                self.close()
+                break
 
     def close(self):
         self._file_handler.close()

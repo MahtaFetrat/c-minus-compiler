@@ -67,6 +67,7 @@ class DiagramDict:
             "type": self._get_transition_type(name),
             "name": re.sub("┤", "$", name),
             "predict": self._get_transition_predict(name, production_rule_no),
+            "follow": DiagramDict.sub_dollar_sign(FOLLOW_SET["name"]),
         }
 
     def _build_rule_transitions(self, production_rules):
@@ -105,8 +106,6 @@ class DiagramDict:
     def _build_rule_diagram_dict(self, rule_name, production_rules):
         diagram = {
             "name": rule_name,
-            "predict_set": DiagramDict.get_nt_predict_set(rule_name, self._production_rules),
-            "follow_set": DiagramDict.sub_dollar_sign(FOLLOW_SET[rule_name]),
             "states": self._build_rule_states(production_rules),
             "transitions": self._build_rule_transitions(production_rules),
         }

@@ -1,7 +1,6 @@
 from src.parser.diagram.diagram import Diagram
 from src.parser.diagram.state import State
 from src.parser.diagram.transition import Transition
-from src.parser.utils import FOLLOW_SET
 from src.parser.utils.enums import SymbolType
 
 
@@ -34,7 +33,7 @@ class Builder:
                 name=tr["name"],
                 symbol_type=SymbolType(tr["type"]),
                 predicts=tr["predict"],
-                follows=[],  # TODO: Ask
+                follows=tr["follow"],
                 diagram=self._diagram.get(tr["name"], None),
             )
             self._states[tr["state_src_id"]].add_transition(transition)
