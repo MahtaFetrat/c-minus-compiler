@@ -1,5 +1,6 @@
 from src.parser.diagram import State
 from src.parser.tree import Tree
+from src.parser.utils import ParseException
 
 
 class Diagram:
@@ -8,11 +9,14 @@ class Diagram:
         self.start_state = start_state
         self.final_state = final_state
 
-    def accept(self, lookahead, scanner):  # TODO: handle error
+    def accept(self, lookahead, scanner, parser):  # TODO: handle error
         subtrees = []
         state = self.start_state
         while state is not self.final_state:
-            tree, lookahead, state = state.transfer(lookahead, scanner)
+            try:
+                tree, lookahead, state = state.transfer(lookahead, scanner, parser)
+            except ParseException as e:
+                parser.write_error(str(e))
             subtrees.append(tree)
         return Tree(self.name, subtrees), lookahead, state
 

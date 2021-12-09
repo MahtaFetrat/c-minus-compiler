@@ -29,12 +29,12 @@ class State(Node):
                 transition=transition
             )
 
-    def transfer(self, lookahead, scanner=None):
-        if scanner is None:
+    def transfer(self, lookahead, scanner=None, parser=None):
+        if scanner is None or parser is None:
             raise ValueError
 
         transition = self.get_valid_transition(lookahead)
-        tree, lookahead = transition.accept(lookahead, scanner)
+        tree, lookahead = transition.accept(lookahead, scanner, parser)
         return tree, lookahead, transition.dest
 
     def is_final(self) -> bool:

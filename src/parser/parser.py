@@ -2,7 +2,6 @@ from src.parser.diagram.builder import Builder
 from src.parser.diagram.dict.diagram_dict import DiagramDict
 from src.parser.utils import ParseException, MissingException
 from src.scanner.scanner import Scanner
-from anytree import RenderTree
 
 
 class Parser:
@@ -16,26 +15,26 @@ class Parser:
             DiagramDict().get_transition_diagram_dict()
         ).build_transition_diagram()
 
+        self._syntax_error_encountered = False
+        self._error_out_file = open(Parser.SYNTAX_ERROR_FILENAME, "w")
+
     def parse(self):
         diagram = self._transition_diagram[Parser.START_STATE]
-        tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner)
-        Parser._output_results(tree)
-        self.close()
-
-    @staticmethod
-    def _output_results(tree):
+        tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
         Parser._write_parse_tree(tree)
-        Parser._write_errors()
+        self.close()
 
     @staticmethod
     def _write_parse_tree(tree):
         with open(Parser.PARSE_TREE_FILENAME, "w") as file:
             file.write(str(tree))
 
-    @staticmethod
-    def _write_errors():
-        with open(Parser.SYNTAX_ERROR_FILENAME, "w") as file:
-            file.write("There is no syntax error.")  # TODO
+    def write_error(self, error_msg):
+        self._syntax_error_encountered = True
+        self._error_out_file.write(f"#{self._scanner.line_num} : syntax error, {error_msg}\n")
 
     def close(self):
         self._scanner.close()
+        if not self._syntax_error_encountered:
+            self._error_out_file.write("There is no syntax error.")
+        self._error_out_file.close()

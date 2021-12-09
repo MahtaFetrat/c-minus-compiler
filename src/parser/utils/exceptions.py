@@ -5,10 +5,10 @@ class ParseException(Exception):
         super().__init__()
         self._state = state
         self._transition = transition
-        self.lookahead = lookahead
+        self._lookahead = lookahead
 
     def __str__(self):
-        return f'{self.args[0]}, state: {self.state}, lookahead: {self.lookahead}'
+        raise NotImplementedError
 
     @property
     def state(self):
@@ -20,10 +20,15 @@ class ParseException(Exception):
 
 
 class MissingException(ParseException):
-    pass
+    def __str__(self):
+        return f"missing {self._transition.name}"
 
 
 class IllegalException(ParseException):
+    def __str__(self):
+        token_type, token_str = self._lookahead
+        terminal_title = token_type if token_type in ["ID", "NUM"] else token_str
+        return f"illegal {terminal_title}"
 
     @property
     def transition(self):

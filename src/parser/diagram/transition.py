@@ -10,8 +10,8 @@ class Transition(Edge):
         self.symbol = create_symbol(name, symbol_type, predicts, follows, diagram)
         super().__init__([self.symbol], dest)
 
-    def accept(self, lookahead, scanner):
-        return self.symbol.accept(lookahead, scanner)
+    def accept(self, lookahead, scanner, parser):
+        return self.symbol.accept(lookahead, scanner, parser)
 
     def is_valid(self, lookahead):
         return self.symbol.is_valid(lookahead)

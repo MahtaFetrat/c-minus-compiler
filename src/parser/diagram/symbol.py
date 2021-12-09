@@ -18,7 +18,7 @@ class Symbol(ABC):
         token_type, token_string = lookahead
         return bool(token_type in self.predicts or token_string in self.predicts)
 
-    def accept(self, lookahead, scanner):
+    def accept(self, lookahead, scanner, parser):
         raise NotImplementedError
 
     def is_missing(self, lookahead):
@@ -30,7 +30,7 @@ class Symbol(ABC):
 
 
 class Terminal(Symbol):
-    def accept(self, lookahead, scanner):
+    def accept(self, lookahead, scanner, parser):
         return Tree(Terminal.token_repr(lookahead), None), scanner.get_next_token()
 
     @staticmethod
@@ -40,13 +40,13 @@ class Terminal(Symbol):
 
 
 class NonTerminal(Symbol):
-    def accept(self, lookahead, scanner):
-        tree, lookahead, _ = self.diagram.accept(lookahead, scanner)
+    def accept(self, lookahead, scanner, parser):
+        tree, lookahead, _ = self.diagram.accept(lookahead, scanner, parser)
         return tree, lookahead
 
 
 class Epsilon(Symbol):
-    def accept(self, lookahead, scanner):
+    def accept(self, lookahead, scanner, parser):
         return Tree("epsilon", None), lookahead
 
 
