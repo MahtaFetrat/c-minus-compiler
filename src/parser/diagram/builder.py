@@ -1,3 +1,5 @@
+import re
+
 from src.parser.diagram.diagram import Diagram
 from src.parser.diagram.state import State
 from src.parser.diagram.transition import Transition
@@ -8,6 +10,9 @@ class Builder:
     def __init__(self, diagram_dict):
         self._diagram_dict = diagram_dict
         self._diagram = {}
+
+        self._start_node = 0
+        self._end_node = 1
         self._states = {}
 
     def build_transition_diagram(self):
@@ -22,9 +27,11 @@ class Builder:
 
     def _build_rule_states(self, states):
         for state in states:
-            self._states[state["id"]] = State(
-                identifier=state["id"], final=state["end"]
-            )
+            self._states[state["id"]] = State(state["id"], final=state["end"])
+            if state["start"]:
+                self._start_node = state["id"]
+            if state["end"]:
+                self._end_node = state["id"]
 
     def _build_rule_transitions(self, transitions):
         for tr in transitions:
@@ -39,8 +46,8 @@ class Builder:
             self._states[tr["state_src_id"]].add_transition(transition)
 
     def _build_rule_diagram(self, rule):
-        for state in rule["states"]:
-            if state["start"]:
-                self._diagram[rule["name"]] = Diagram(
-                    name=rule["name"], start_node=self._states[state["id"]]
-                )
+        self._diagram[rule["name"]] = Diagram(
+            name=re.sub("_", "-", rule["name"]),
+            start_state=self._states[self._start_node],
+            final_state=self._states[self._end_node],
+        )

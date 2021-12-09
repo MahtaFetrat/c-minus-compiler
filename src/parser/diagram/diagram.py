@@ -3,17 +3,18 @@ from src.parser.tree import Tree
 
 
 class Diagram:
-    def __init__(self, name: str, start_node: State):
+    def __init__(self, name: str, start_state: State, final_state: State):
         self.name = name
-        self.start_node = start_node
-        self._subtrees = []
+        self.start_state = start_state
+        self.final_state = final_state
 
     def accept(self, lookahead, scanner):  # TODO: handle error
-        state = self.start_node
-        while not state.is_final():
+        subtrees = []
+        state = self.start_state
+        while state is not self.final_state:
             tree, lookahead, state = state.transfer(lookahead, scanner)
-            self._subtrees.append(tree)
-        return Tree(self.name, self._subtrees), lookahead, state
+            subtrees.append(tree)
+        return Tree(self.name, subtrees), lookahead, state
 
     @property
     def tree(self):

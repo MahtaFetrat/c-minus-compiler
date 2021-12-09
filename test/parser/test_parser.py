@@ -1,15 +1,29 @@
 import unittest
 
-from src.parser import Parser
+from src.parser.parser import Parser
 
 
 class TestParser(unittest.TestCase):
+    def assert_output_file_equal(self, test_number, file_name):
+        with open(
+            f"test_files/T{test_number}/{file_name}.txt", "r", encoding="utf-8"
+        ) as expected_file, open(
+            f"{file_name}.txt", "r", encoding="utf-8"
+        ) as actual_file:
+            expected_content = expected_file.read()
+            actual_content = actual_file.read()
+            self.assertEqual(expected_content, actual_content)
 
     def test_parse(self):
-        parser = Parser(f'test_files/T01/input.txt')
-        tree = parser.parse()
-        print(tree.get_printable_tree())
+        for i in range(5):
+            with self.subTest():
+                test_number = f"{i + 1:02d}"
+                parser = Parser(f"test_files/T{test_number}/input.txt")
+                parser.parse()
+
+                self.assert_output_file_equal(test_number, "parse_tree")
+                self.assert_output_file_equal(test_number, "syntax_errors")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
