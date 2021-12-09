@@ -17,12 +17,7 @@ class ParseException(Exception):
         return self.transition
 
 
-class MissingNTException(ParseException):
-    def __str__(self):
-        return f"missing {self._transition.name}"
-
-
-class MissingTException(ParseException):
+class MissingException(ParseException):
     def __str__(self):
         return f"missing {self._transition.name}"
 

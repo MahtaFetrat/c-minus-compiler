@@ -2,12 +2,7 @@ from typing import List, Tuple
 
 from src.base import Node
 from src.parser.diagram.transition import Transition
-from src.parser.tree import Tree
-from src.parser.utils import (
-    MissingNTException,
-    IllegalException,
-    MissingTException,
-)
+from src.parser.utils import IllegalException, MissingException
 
 
 class State(Node):
@@ -27,11 +22,10 @@ class State(Node):
             return transition
         except IndexError:
             is_missed, transition = self.check_missing(lookahead)
-            exception_cls = MissingNTException if is_missed else IllegalException
-            # TODO: right MisssingException class
-            e = exception_cls(state=self, lookahead=lookahead, transition=transition)
-            parser.write_error(str(e))
-            raise e
+            exception_cls = MissingException if is_missed else IllegalException
+            exc = exception_cls(state=self, lookahead=lookahead, transition=transition)
+            parser.write_error(str(exc))
+            raise exc
 
     def transfer(self, lookahead, scanner=None, parser=None):
         """:raises IllegalException and UnexpectedEOFException."""
@@ -41,9 +35,7 @@ class State(Node):
             transition = self.get_valid_transition(lookahead, parser)
             tree, lookahead = transition.accept(lookahead, scanner, parser)
             return tree, lookahead, transition.dest
-        except (MissingTException, MissingNTException) as e:
-            if e.__class__ == MissingNTException.__class__:
-                lookahead = scanner.get_next_token()
+        except MissingException as e:
             return None, lookahead, e.transition.dest
 
     def is_final(self) -> bool:
