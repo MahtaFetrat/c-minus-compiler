@@ -4,9 +4,9 @@ from src.base import Node
 from src.parser.diagram.transition import Transition
 from src.parser.tree import Tree
 from src.parser.utils import (
-    MissingNonTerminalException,
+    MissingNTException,
     IllegalException,
-    MissingTerminalException,
+    MissingTException,
 )
 
 
@@ -27,14 +27,11 @@ class State(Node):
             return transition
         except IndexError:
             is_missed, transition = self.check_missing(lookahead)
-            exception_cls = (
-                MissingNonTerminalException if is_missed else IllegalException
-            )  # TODO: right MisssingException
-            exception = exception_cls(
-                state=self, lookahead=lookahead, transition=transition
-            )
-            parser.write_error(str(exception))
-            raise exception
+            exception_cls = MissingNTException if is_missed else IllegalException
+            # TODO: right MisssingException class
+            e = exception_cls(state=self, lookahead=lookahead, transition=transition)
+            parser.write_error(str(e))
+            raise e
 
     def transfer(self, lookahead, scanner=None, parser=None):
         """:raises IllegalException and UnexpectedEOFException."""
@@ -44,13 +41,10 @@ class State(Node):
             transition = self.get_valid_transition(lookahead, parser)
             tree, lookahead = transition.accept(lookahead, scanner, parser)
             return tree, lookahead, transition.dest
-        except (MissingTerminalException, MissingNonTerminalException) as e:
-            return (
-                None,
-                lookahead
-                if e.__class__ == MissingNonTerminalException.__class__
-                else scanner.get_next_token(),
-            )
+        except (MissingTException, MissingNTException) as e:
+            if e.__class__ == MissingNTException.__class__:
+                lookahead = scanner.get_next_token()
+            return None, lookahead, e.transition.dest
 
     def is_final(self) -> bool:
         return self.final

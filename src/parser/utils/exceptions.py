@@ -17,12 +17,12 @@ class ParseException(Exception):
         return self.transition
 
 
-class MissingNonTerminalException(ParseException):
+class MissingNTException(ParseException):
     def __str__(self):
         return f"missing {self._transition.name}"
 
 
-class MissingTerminalException(ParseException):
+class MissingTException(ParseException):
     def __str__(self):
         return f"missing {self._transition.name}"
 
