@@ -15,7 +15,12 @@ class Parser:
         ).build_transition_diagram()
 
         self._syntax_error_encountered = False
+        self._unexpected_eof_encountered = False
         self._error_out_file = open(Parser.SYNTAX_ERROR_FILENAME, "w")
+
+    @property
+    def stopped(self):
+        return self._unexpected_eof_encountered
 
     def parse(self):
         diagram = self._transition_diagram[Parser.START_STATE]
@@ -30,6 +35,8 @@ class Parser:
 
     def write_error(self, error_msg):
         self._syntax_error_encountered = True
+        if "Unexpected EOF" in error_msg:
+            self._unexpected_eof_encountered = True
         self._error_out_file.write(
             f"#{self._scanner.line_num} : syntax error, {error_msg}\n"
         )

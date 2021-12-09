@@ -17,7 +17,12 @@ class ParseException(Exception):
         return self.transition
 
 
-class MissingException(ParseException):
+class MissingNonTerminalException(ParseException):
+    def __str__(self):
+        return f"missing {self._transition.name}"
+
+
+class MissingTerminalException(ParseException):
     def __str__(self):
         return f"missing {self._transition.name}"
 
@@ -31,3 +36,8 @@ class IllegalException(ParseException):
     @property
     def transition(self):
         raise ValueError
+
+
+class UnexpectedEOFException(ParseException):
+    def __str__(self):
+        return "Unexpected EOF"

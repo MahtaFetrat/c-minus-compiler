@@ -2,7 +2,12 @@ from typing import List, Tuple
 
 from src.base import Node
 from src.parser.diagram.transition import Transition
-from src.parser.utils import MissingException, IllegalException
+from src.parser.tree import Tree
+from src.parser.utils import (
+    MissingNonTerminalException,
+    IllegalException,
+    MissingTerminalException,
+)
 
 
 class State(Node):
@@ -16,22 +21,36 @@ class State(Node):
         missing = list(filter(lambda tr: tr.is_missing(lookahead), self._edges))
         return (True, missing[0]) if any(missing) else (False, None)
 
-    def get_valid_transition(self, lookahead) -> Transition:
+    def get_valid_transition(self, lookahead, parser) -> Transition:
         try:
             transition = list(filter(lambda x: x.is_valid(lookahead), self._edges))[0]
             return transition
         except IndexError:
             is_missed, transition = self.check_missing(lookahead)
-            exception_cls = MissingException if is_missed else IllegalException
-            raise exception_cls(state=self, lookahead=lookahead, transition=transition)
+            exception_cls = (
+                MissingNonTerminalException if is_missed else IllegalException
+            )  # TODO: right MisssingException
+            exception = exception_cls(
+                state=self, lookahead=lookahead, transition=transition
+            )
+            parser.write_error(str(exception))
+            raise exception
 
     def transfer(self, lookahead, scanner=None, parser=None):
+        """:raises IllegalException and UnexpectedEOFException."""
         if scanner is None or parser is None:
             raise ValueError
-
-        transition = self.get_valid_transition(lookahead)
-        tree, lookahead = transition.accept(lookahead, scanner, parser)
-        return tree, lookahead, transition.dest
+        try:
+            transition = self.get_valid_transition(lookahead, parser)
+            tree, lookahead = transition.accept(lookahead, scanner, parser)
+            return tree, lookahead, transition.dest
+        except (MissingTerminalException, MissingNonTerminalException) as e:
+            return (
+                None,
+                lookahead
+                if e.__class__ == MissingNonTerminalException.__class__
+                else scanner.get_next_token(),
+            )
 
     def is_final(self) -> bool:
         return self.final
