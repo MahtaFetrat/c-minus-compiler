@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from src.base import Node, EOF
 from src.parser.diagram.symbol import Terminal
@@ -13,7 +13,7 @@ class State(Node):
         self.final = final
         super(State, self).__init__(identifier, transitions)
 
-    def check_missing(self, lookahead) -> Tuple[bool, Transition]:
+    def check_missing(self, lookahead) -> Tuple[bool, Union[Transition, None]]:
         missing = list(filter(lambda tr: tr.is_missing(lookahead), self._edges))
         if any(missing):
             return True, missing[0]
