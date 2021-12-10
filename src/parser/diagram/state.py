@@ -44,14 +44,9 @@ class State(Node):
         """:raises IllegalException and UnexpectedEOFException."""
         if scanner is None or parser is None:
             raise ValueError
-
-        try:
-            transition = self.get_valid_transition(lookahead)
-            tree, lookahead = transition.accept(lookahead, scanner, parser)
-            return tree, lookahead, transition.dest
-        except MissingException as exc:
-            parser.write_error(str(exc))
-            return None, lookahead, exc.transition.dest
+        transition = self.get_valid_transition(lookahead)
+        tree, lookahead = transition.accept(lookahead, scanner, parser)
+        return tree, lookahead, transition.dest
 
     def is_final(self) -> bool:
         return self.final

@@ -1,6 +1,6 @@
 from src.parser.diagram import State
 from src.parser.tree import Tree
-from src.parser.utils import UnexpectedEOFException, IllegalException, ParseException
+from src.parser.utils import IllegalException, ParseException, MissingException
 
 
 class Diagram:
@@ -17,10 +17,12 @@ class Diagram:
                 tree, lookahead, state = state.transfer(lookahead, scanner, parser)
                 if tree:
                     subtrees.append(tree)
-            except (IllegalException, UnexpectedEOFException) as exc:
+            except ParseException as exc:
                 parser.write_error(str(exc))
                 if isinstance(exc, IllegalException):
                     lookahead = scanner.get_next_token()
+                if isinstance(exc, MissingException):
+                    state = exc.transition.dest
                 continue
         return Tree(self.name, subtrees), lookahead, state
 
