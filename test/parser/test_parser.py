@@ -15,14 +15,14 @@ class TestParser(unittest.TestCase):
             self.assertEqual(expected_content, actual_content)
 
     def test_parse(self):
-        for i in range(5):
+        for i in range(10):
             with self.subTest():
                 test_number = f"{i + 1:02d}"
                 parser = Parser(f"test_files/T{test_number}/input.txt")
                 parser.parse()
 
-                self.assert_output_file_equal(test_number, "parse_tree")
-                self.assert_output_file_equal(test_number, "syntax_errors")
+        self.assert_output_file_equal(test_number, "parse_tree")
+        self.assert_output_file_equal(test_number, "syntax_errors")
 
 
 if __name__ == "__main__":

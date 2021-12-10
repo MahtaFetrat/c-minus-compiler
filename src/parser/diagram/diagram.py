@@ -21,9 +21,7 @@ class Diagram:
                 parser.write_error(str(exc))
                 if isinstance(exc, IllegalException):
                     lookahead = scanner.get_next_token()
-                    continue
-                if isinstance(exc, UnexpectedEOFException):
-                    break
+                continue
         return Tree(self.name, subtrees), lookahead, state
 
     def __str__(self):

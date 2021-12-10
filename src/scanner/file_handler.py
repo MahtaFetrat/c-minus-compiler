@@ -73,7 +73,7 @@ class FileHandler:
         if self._buffer and self._buffer[-1] != "\n":  # Add final new-line
             self._buffer = self._buffer + "\n"
         self._buffer_iterator = Iterator(self._buffer)
-        self._line_number += 1 if self._buffer else 0
+        self._line_number += 1
 
     def _update_lexeme(self, char):
         """Update the lexeme with the given character."""
@@ -82,7 +82,7 @@ class FileHandler:
 
         self._lexeme.append(char)
         if self._lexeme[:2] == ["/", "*"]:
-            self._lexeme = list(filter(lambda x: x != '\n', self._lexeme[:8]))
+            self._lexeme = list(filter(lambda x: x != "\n", self._lexeme[:8]))
 
     @property
     def line_number(self):
@@ -190,7 +190,7 @@ class OutputHandler:
         """Writes the symbol table items to the symbol table file."""
         symbols = list(self._symbol_table)
         with open(
-                OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
+            OutputHandler._SYMBOL_TABLE_FILENAME, "w", encoding="utf-8"
         ) as symbol_table_file:
             symbol_table_file.write(
                 "".join(

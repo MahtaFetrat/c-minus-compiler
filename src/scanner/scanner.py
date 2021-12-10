@@ -71,5 +71,13 @@ class Scanner:
         except StopIteration:
             return TokenType.SYMBOL.name, EOF
 
+    def get_all_tokens(self):
+        """Gets all tokens using the get_next_token method. Used for phase 1 test."""
+        while True:
+            _, token_string = self.get_next_token()
+            if token_string == EOF:
+                self.close()
+                break
+
     def close(self):
         self._file_handler.close()

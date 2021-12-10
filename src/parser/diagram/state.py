@@ -14,11 +14,15 @@ class State(Node):
         super(State, self).__init__(identifier, transitions)
 
     def check_missing(self, lookahead) -> Tuple[bool, Transition]:
-        terminals = list(filter(lambda tr: isinstance(tr.symbol, Terminal), self._edges))
+        missing = list(filter(lambda tr: tr.is_missing(lookahead), self._edges))
+        if any(missing):
+            return True, missing[0]
+        terminals = list(
+            filter(lambda tr: isinstance(tr.symbol, Terminal), self._edges)
+        )
         if any(terminals):
             return True, terminals[0]
-        missing = list(filter(lambda tr: tr.is_missing(lookahead), self._edges))
-        return (True, missing[0]) if any(missing) else (False, None)
+        return False, None
 
     def get_valid_transition(self, lookahead) -> Transition:
         try:
@@ -26,7 +30,13 @@ class State(Node):
             return transition
         except IndexError:
             is_missed, transition = self.check_missing(lookahead)
-            exception_cls = MissingException if is_missed else IllegalException
+            exception_cls = (
+                MissingException
+                if is_missed
+                else IllegalException
+                if lookahead[1] != EOF
+                else UnexpectedEOFException
+            )
             exc = exception_cls(state=self, lookahead=lookahead, transition=transition)
             raise exc
 
@@ -34,9 +44,6 @@ class State(Node):
         """:raises IllegalException and UnexpectedEOFException."""
         if scanner is None or parser is None:
             raise ValueError
-
-        if lookahead[1] == EOF:
-            raise UnexpectedEOFException(state=self, lookahead=lookahead)
 
         try:
             transition = self.get_valid_transition(lookahead)
