@@ -16,6 +16,10 @@ class Transition(Edge):
         self.symbol = create_symbol(name, symbol_type, predicts, follows, diagram)
         super().__init__([self.symbol], dest)
 
+    @property
+    def name(self):
+        return self.symbol.name
+
     def accept(self, lookahead, scanner, parser):
         return self.symbol.accept(lookahead, scanner, parser)
 

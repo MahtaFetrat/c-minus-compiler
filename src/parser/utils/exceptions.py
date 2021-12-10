@@ -1,5 +1,5 @@
 class ParseException(Exception):
-    def __init__(self, state, lookahead, transition):
+    def __init__(self, state, lookahead, transition=None):
         super().__init__()
         self._state = state
         self._transition = transition
@@ -14,7 +14,7 @@ class ParseException(Exception):
 
     @property
     def transition(self):
-        return self.transition
+        return self._transition
 
 
 class MissingException(ParseException):
@@ -36,3 +36,7 @@ class IllegalException(ParseException):
 class UnexpectedEOFException(ParseException):
     def __str__(self):
         return "Unexpected EOF"
+
+    @property
+    def transition(self):
+        raise ValueError

@@ -1,3 +1,4 @@
+from src.base import EOF
 from src.scanner.file_handler import FileHandler
 from src.scanner.dfa import Builder, DFADict
 from src.scanner.utils import TokenType, Language
@@ -68,7 +69,7 @@ class Scanner:
                 return next_token
             return self.get_next_token()
         except StopIteration:
-            return TokenType.SYMBOL.name, "$"
+            return TokenType.SYMBOL.name, EOF
 
     def close(self):
         self._file_handler.close()
