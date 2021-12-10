@@ -1,5 +1,6 @@
 from src.parser.diagram.builder import Builder
 from src.parser.diagram.dict.diagram_dict import DiagramDict
+from src.parser.tree import Tree
 from src.scanner.scanner import Scanner
 
 
@@ -29,8 +30,8 @@ class Parser:
         self.close()
 
     @staticmethod
-    def _write_parse_tree(tree):
-        with open(Parser.PARSE_TREE_FILENAME, "w") as file:
+    def _write_parse_tree(tree: Tree):
+        with open(Parser.PARSE_TREE_FILENAME, "w", encoding="utf-8") as file:
             file.write(str(tree))
 
     def write_error(self, error_msg):
