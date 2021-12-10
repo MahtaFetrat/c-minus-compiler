@@ -28,10 +28,10 @@ class DFA:
         self._start_state = start_state
         self._terminal_state = None
 
-    def iterate(self, string) -> State:
+    def iterate(self, value) -> State:
         """for DFA test"""
         state = self._start_state
-        for character in string:
+        for character in value:
             print(f'chr = {character}')
             print(f'state = {state.__dict__}')
             [print(f'tr = {tr}') for tr in state.transitions]
