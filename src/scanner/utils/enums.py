@@ -35,7 +35,7 @@ class Language(Enum):
     LETTERS = string.ascii_letters
     SYMBOLS = ';:,[](){}+-*=<'
     WHITESPACES = [' ', '\n', '\r', '\t', '\v', '\f', '\0']
-    KEYWORDS = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
+    KEYWORDS = ['if', 'endif', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
     def value(self):
         return list(super(Language, self).value)
