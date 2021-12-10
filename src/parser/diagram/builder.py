@@ -37,7 +37,7 @@ class Builder:
         for tr in transitions:
             transition = Transition(
                 dest=self._states[tr["state_dst_id"]],
-                name=tr["name"],
+                name=re.sub("_", "-", tr["name"]),
                 symbol_type=SymbolType(tr["type"]),
                 predicts=tr["predict"],
                 follows=tr["follow"],
