@@ -20,7 +20,7 @@ class State(Node):
         terminals = list(
             filter(lambda tr: isinstance(tr.symbol, Terminal), self._edges)
         )
-        if any(terminals):
+        if any(terminals) and terminals[0].symbol.name != EOF:
             return True, terminals[0]
         return False, None
 
