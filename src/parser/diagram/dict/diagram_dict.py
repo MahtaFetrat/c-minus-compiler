@@ -46,6 +46,8 @@ class DiagramDict:
             if name in FOLLOW_SET
             else SymbolType.EPSILON.value
             if name == "ε"
+            else SymbolType.SEMANTIC_ACTION.value
+            if name.startswith("#")
             else SymbolType.TERMINAL.value
         )
 

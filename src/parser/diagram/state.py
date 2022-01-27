@@ -52,5 +52,5 @@ class State(Node):
         return self.final
 
     @property
-    def transition(self):
-        return self._edges[0]
+    def transitions(self):
+        return self._edges

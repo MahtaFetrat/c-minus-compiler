@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from src.parser.diagram.builder import Builder
 from src.parser.diagram.dict.diagram_dict import DiagramDict
 from src.parser.tree import Tree
@@ -28,6 +30,7 @@ class Parser:
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
         Parser._write_parse_tree(tree)
         self.close()
+        print(str(tree))
 
     @staticmethod
     def _write_parse_tree(tree: Tree):

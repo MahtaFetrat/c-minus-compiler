@@ -24,7 +24,7 @@ class Transition(Edge):
         return self.symbol.accept(lookahead, scanner, parser)
 
     def is_valid(self, lookahead):
-        return self.symbol.is_valid(lookahead)
+        return self.symbol.is_valid(lookahead, self.dest)
 
     def is_missing(self, lookahead):
         return self.symbol.is_missing(lookahead)

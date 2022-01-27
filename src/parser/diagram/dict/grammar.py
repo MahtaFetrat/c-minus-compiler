@@ -1,12 +1,12 @@
 import re
 
 GRAMMAR = """1. Program -> Declaration-list $
-2. Declaration-list -> Declaration Declaration-list | EPSILON
+2. Declaration-list -> #declare_list Declaration Declaration-list #end_list | EPSILON
 3. Declaration -> Declaration-initial Declaration-prime
 4. Declaration-initial -> Type-specifier ID
 5. Declaration-prime -> Fun-declaration-prime | Var-declaration-prime
 6. Var-declaration-prime -> ; | [ NUM ] ;
-7. Fun-declaration-prime -> ( Params ) Compound-stmt
+7. Fun-declaration-prime -> #declare_func ( Params ) Compound-stmt #end_func
 8. Type-specifier -> int | void
 9. Params -> int ID Param-prime Param-list | void
 10. Param-list -> , Param Param-list | EPSILON
