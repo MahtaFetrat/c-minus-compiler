@@ -51,6 +51,12 @@ class SymbolTable:
     def current_scope(self):
         return self.stack[-1]
 
+    def add_scope(self):
+        self.stack.append(Scope(self.current_scope))
+
+    def remove_scope(self):
+        self.stack.pop()
+
     def add_symbol(self, lookahead):
         token_type = lookahead[0]
         if token_type in self.keyword:
