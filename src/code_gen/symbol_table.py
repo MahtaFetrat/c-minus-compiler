@@ -29,12 +29,12 @@ class Scope:
             self.stack.append(item)
             return item
 
-    def get_item(self, token):
+    def get_item(self, lookahead):
         for item in self.stack:
-            if item.token == token:
+            if item.token == lookahead:
                 return item
         if self.parent:
-            return self.parent.get_item(token)
+            return self.parent.get_item(lookahead)
         return None
 
     def __str__(self):
