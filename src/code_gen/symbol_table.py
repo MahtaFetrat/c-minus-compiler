@@ -5,12 +5,12 @@ from src.scanner.utils import Language
 
 class IDItem:
     def __init__(
-            self, lookahead=None, element_type=None, no_args=None, scope=None
+            self, lookahead=None, scope=None, element_type=None, no_args=None
     ):
         self.lookahead = lookahead
+        self.scope = scope
         self.element_type = element_type
         self.no_args = no_args
-        self.scope = scope
 
     @property
     def index(self):
@@ -26,7 +26,7 @@ class Scope:
         self.parent = parent
 
     def insert(self, lookahead) -> IDItem:
-        item = IDItem(lookahead, None, None, self, None)
+        item = IDItem(lookahead, self, None, None)
         self.stack.append(item)
         return item
 
