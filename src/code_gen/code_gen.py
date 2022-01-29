@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from src.code_gen.assembler import Assembler
+from src.code_gen.assembler import Assembler, OPCode
 from src.code_gen.symbol_table import SymbolTable
 
 
@@ -11,10 +11,9 @@ class CodeGen:
     _STACK_ADDRESS = 1000
 
     def __init__(self):
-        self.pb_index = 0
         self.lookahead = None
+        self.scopes = {}
         self.symbol_table = SymbolTable()
-        self.program_block = []
         self.semantic_stack = []
         self.control_stack = []
         self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS)
@@ -49,6 +48,18 @@ class CodeGen:
             '#skip': self.skip,
         }
 
+    @property
+    def pb_index(self):
+        return len(self.assembler.program_block)
+
+    @classmethod
+    def indirect(cls, address):
+        return '@%s' % address
+
+    @classmethod
+    def constant(cls, val):
+        return '#%s' % val
+
     def get_temp_var(self):
         self.assembler.move_temp_pointer(self._WORD_SIZE)
         return self.assembler.temp_address - self._WORD_SIZE
@@ -62,10 +73,10 @@ class CodeGen:
     def ss_push(self, item):
         self.semantic_stack.append(item)
 
-    def pb_push(self, item):
-        self.program_block.append(item)
+    def pb_insert(self, *args):
+        self.assembler.add_instruction(*args)
 
-    def cs_add(self, item):
+    def cs_push(self, item):
         self.control_stack.append(item)
 
     def call(self, semantic_action, lookahead):
@@ -100,76 +111,73 @@ class CodeGen:
         pass
 
     def release_scope(self):
-        pass
+        func_name = self.symbol_table.current_scope.name
+        self.scopes[func_name] = self.symbol_table.pop()
 
     def pid(self):
-        pass
+        self.ss_push(self.lookahead[1])
 
     def pnum(self):
         self.ss_push(f'#{self.lookahead[1]}')
 
     def assign(self):
-        self.pb_push(f'(ASSIGN, {self.ss_pop()}, {self.ss_pop()}, ')
-        self.pb_push('')
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.ss_pop())
+        self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def displace(self):
         temp = self.ss_pop() + self.semantic_stack[-1]
         self.semantic_stack.append(temp)
 
     def save(self):
-        self.ss_push(len(self.program_block))
+        self.ss_push(self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def pop(self):
         self.ss_pop()
 
     def jp(self):
-        self.pb_push(f'(JP, {self.semantic_stack.pop()}, , )')
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
 
     def jp_back(self):
-        self.pb_push(f'(JP, @{self.control_stack.pop()}, , )')
-        self.pb_push('')
+        self.pb_insert(self.pb_index, self.indirect(self.cs_pop()))
+        self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def jpf(self):
-        self.program_block[
-            self.ss_pop()
-        ] = f'(JPF, {self.ss_pop()}, {len(self.ss_pop())}, )'
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), len(self.ss_pop()))
 
     def jpf_save(self):
-        self.program_block[
-            self.ss_pop()
-        ] = f'(JPF, {self.ss_pop()}, {len(self.program_block) + 1}, )'
-        self.ss_push(len(self.program_block))
-        self.pb_push('')
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), len(self.ss_pop()) + 1)
+        self.ss_push(self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def break_label(self):
         temp = self.get_temp_var()
-        self.cs_add(temp)
+        self.cs_push(temp)
 
     def label(self):
-        self.ss_push(len(self.program_block))
+        self.ss_push(self.pb_index)
 
     def repeat(self):
-        self.program_block.append(f'(JPF, {self.ss_pop()}, {self.ss_pop()}, )')
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop(), self.ss_pop())
 
     def break_assign(self):
-        self.program_block[
-            self.ss_pop()
-        ] = f'(ASSIGN, {len(self.program_block)}, {self.cs_pop()}, )'
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.pb_index, self.cs_pop())
 
     def relop(self):
         self.ss_push('LT' if self.lookahead[1] == '<' else 'EQ')
 
     def cmp(self):
         temp = self.get_temp_var()
-        self.pb_push(f'({self.semantic_stack[-2]}, {self.semantic_stack[-1]}, {self.semantic_stack[-3]}, {temp})')
+        self.pb_insert(self.pb_index, self.semantic_stack[-2], self.semantic_stack[-1], self.semantic_stack[-3], temp)
         for _ in range(3):
             self.ss_pop()
         self.ss_push(temp)
 
     def pre_func(self):
-        self.ss_push(len(self.program_block))
+        self.ss_push(self.pb_index)
         for _ in range(2):
-            self.program_block.append('')
+            self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def skip(self):
         pass
