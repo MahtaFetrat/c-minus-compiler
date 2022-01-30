@@ -11,8 +11,9 @@ class CodeGen:
     _RUNTIME_STACK_TOP = _TEMP_ADDRESS
     _STACK_ADDRESS = 1000
 
-    _SAVED_INDEX = 0
-    _RETURN_ADDRESS_INDEX = 1
+    _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
+    _RETURN_ADDRESS_DISPLACEMENT = 1 * _WORD_SIZE
+    _VARIABLES_DISPLACEMENT = 2 * _WORD_SIZE
 
     def __init__(self):
         self.lookahead = None
@@ -69,12 +70,19 @@ class CodeGen:
     def get_display_address(cls, scope):
         return cls._TEMP_ADDRESS + cls._WORD_SIZE + cls._WORD_SIZE * scope
 
+    @classmethod
+    def get_variable_displacement(cls, index):
+        return cls._VARIABLES_DISPLACEMENT + cls._WORD_SIZE * index
+
     def get_temp_var(self):
         self.assembler.move_temp_pointer(self._WORD_SIZE)
         return self.assembler.temp_address - self._WORD_SIZE
 
     def ss_pop(self):
         return self.semantic_stack.pop()
+
+    def ss_peek(self):
+        return self.semantic_stack[-1]
 
     def cs_pop(self):
         return self.control_stack.pop()
@@ -131,19 +139,20 @@ class CodeGen:
         func_name = self.symbol_table.current_scope.name
         self.scopes[func_name] = self.symbol_table.pop()
 
-    def pid(self):
-        self.ss_push(self.lookahead[1])
+    def pid(self, lookahead):
+        self.ss_push(lookahead[1])
 
-    def pnum(self):
-        self.ss_push(f'#{self.lookahead[1]}')
+    def pnum(self, lookahead):
+        self.ss_push(self.constant(lookahead[1]))
 
     def assign(self):
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.ss_pop())
-        self.pb_insert(self.pb_index, OPCode.EMPTY)
+        rhs = self.ss_pop()
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, rhs, self.indirect(self.ss_pop()))
+        self.ss_push(rhs)
 
     def displace(self):
-        temp = self.ss_pop() + self.semantic_stack[-1]
-        self.semantic_stack.append(temp)
+        displacement = self.ss_pop()
+        self.pb_insert(self.pb_index, OPCode.ADD, displacement, self.ss_peek(), self.ss_peek())
 
     def save(self):
         self.ss_push(self.pb_index)
@@ -181,14 +190,31 @@ class CodeGen:
     def break_assign(self):
         self.pb_insert(self.ss_pop(), OPCode.ASSIGN, self.pb_index, self.cs_pop())
 
-    def relop(self):
-        self.ss_push('LT' if self.lookahead[1] == '<' else 'EQ')
+    def relop(self, lookahead):
+        self.ss_push('LT' if lookahead[1] == '<' else 'EQ')
 
     def cmp(self):
+        second_operand = self.ss_pop()
+        operator = self.ss_pop()
+        first_operand = self.ss_pop()
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, self.semantic_stack[-2], self.semantic_stack[-1], self.semantic_stack[-3], temp)
-        for _ in range(3):
-            self.ss_pop()
+        self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
+        self.ss_push(temp)
+
+    def addop(self, lookahead):
+        self.ss_push('ADD' if lookahead[1]=='+' else 'SUB')
+
+    def add(self):
+        second_operand = self.ss_pop()
+        operator = self.ss_pop()
+        first_operand = self.ss_pop()
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
+        self.ss_push(temp)
+
+    def mult(self):
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.MULT, self.ss_pop(), self.ss_pop(), temp)
         self.ss_push(temp)
 
     def pre_func(self):
@@ -210,7 +236,8 @@ class CodeGen:
     def return_jp(self):
         scope = self.symbol_table.current_scope.number
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_INDEX, temp)
+        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_DISPLACEMENT,
+                       temp)
         self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(temp))
 
     def stmt_flag(self):
@@ -223,4 +250,33 @@ class CodeGen:
     def break_jp(self):
         self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(self.cs_peek()))
 
-    def
+    def apply_id(self):
+        _id = self.ss_pop()
+        var = self.symbol_table.get_id_var(_id)
+
+        if var == IDItem.IDVar.FUNCTION:
+            return
+
+        scope, index = self.symbol_table.get_address()
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
+        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp)
+
+        if var != IDItem.IDVar.ARRAY:
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
+
+        self.ss_push(temp)
+
+    def assign_id(self):
+        _id = self.ss_pop()
+        var = self.symbol_table.get_id_var(_id)
+
+        if var == IDItem.IDVar.FUNCTION:
+            return
+
+        scope, index = self.symbol_table.get_address()
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
+        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp)
+
+        self.ss_push(temp)

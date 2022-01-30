@@ -83,6 +83,14 @@ class Scope:
     def set_call_address(self, call_address):
         self.call_address = call_address
 
+    def get_id_var(self, _id):
+        for index, item in enumerate(self.id_items):
+            if item.id == _id:
+                return item.var
+        if self.parent:
+            return self.parent.get_id_var(_id)
+        return None
+
 
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
@@ -128,3 +136,9 @@ class SymbolTable:
 
     def set_call_address(self, call_address):
         self.current_scope.set_call_address(call_address)
+
+    def get_id_var(self, _id):
+        return self.current_scope.get_id_var(_id)
+
+    def get_address(self, _id):
+        return self.current_scope.get_address(_id)
