@@ -79,6 +79,9 @@ class CodeGen:
     def cs_pop(self):
         return self.control_stack.pop()
 
+    def cs_peek(self):
+        return self.control_stack[-1]
+
     def ss_push(self, item):
         self.semantic_stack.append(item)
 
@@ -150,18 +153,17 @@ class CodeGen:
         self.ss_pop()
 
     def jp(self):
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
+        self.pb_insert(self.ss_pop(), OPCode.JUMP, self.pb_index)
 
     def jp_back(self):
         self.pb_insert(self.pb_index, self.indirect(self.cs_pop()))
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def jpf(self):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), len(self.ss_pop()))
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), self.pb_index)
 
     def jpf_save(self):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), len(self.ss_pop()) + 1)
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), self.pb_index + 1)
         self.ss_push(self.pb_index)
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
@@ -173,10 +175,11 @@ class CodeGen:
         self.ss_push(self.pb_index)
 
     def repeat(self):
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop(), self.ss_pop())
+        self.pb_insert(self.pb_index, OPCode.JUMP_IF, self.ss_pop(), self.pb_index + 2)
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
 
     def break_assign(self):
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.pb_index, self.cs_pop())
+        self.pb_insert(self.ss_pop(), OPCode.ASSIGN, self.pb_index, self.cs_pop())
 
     def relop(self):
         self.ss_push('LT' if self.lookahead[1] == '<' else 'EQ')
@@ -206,6 +209,18 @@ class CodeGen:
 
     def return_jp(self):
         scope = self.symbol_table.current_scope.number
-        t = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_INDEX, t)
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(t))
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_INDEX, temp)
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(temp))
+
+    def stmt_flag(self):
+        self.ss_push("stmt_flag")
+
+    def pop_stmt_flag(self):
+        while self.ss_pop() != "stmt_flag":
+            pass
+
+    def break_jp(self):
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(self.cs_peek()))
+
+    def
