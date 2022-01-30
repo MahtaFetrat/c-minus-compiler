@@ -8,7 +8,11 @@ class CodeGen:
     _WORD_SIZE = 4
     _DATA_ADDRESS = 100
     _TEMP_ADDRESS = 500
+    _RUNTIME_STACK_TOP = _TEMP_ADDRESS
     _STACK_ADDRESS = 1000
+
+    _SAVED_INDEX = 0
+    _RETURN_ADDRESS_INDEX = 1
 
     def __init__(self):
         self.lookahead = None
@@ -78,8 +82,8 @@ class CodeGen:
     def ss_push(self, item):
         self.semantic_stack.append(item)
 
-    def pb_insert(self, *args):
-        self.assembler.add_instruction(*args)
+    def pb_insert(self, index, opcode, *args):
+        self.assembler.add_instruction(index, opcode, *args)
 
     def cs_push(self, item):
         self.control_stack.append(item)
@@ -105,7 +109,6 @@ class CodeGen:
 
     def declare_func(self):
         self.symbol_table.set_var(IDItem.IDVar.FUNCTION)
-        self.symbol_table.add_scope()
 
     def cell_no(self, lookahead):
         self.symbol_table.set_cell_no(int(lookahead))
@@ -114,7 +117,8 @@ class CodeGen:
         self.symbol_table.increment_arg_count()
 
     def add_scope(self):
-        scope = self.symbol_table.current_scope.number + 1
+        self.symbol_table.add_scope()
+        scope = self.symbol_table.current_scope.number
         if scope not in self.scope_numbers:
             display_address = self.get_display_address(scope)
             self.pb_insert(OPCode.ASSIGN, self.constant(-1), display_address)
@@ -190,4 +194,18 @@ class CodeGen:
             self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def skip(self):
-        pass
+        self.pb_insert(self.ss_pop(), OPCode.JUMP, self.pb_index)
+
+    def set_call_address(self):
+        self.symbol_table.set_call_address(self.pb_index - 1)
+
+    def set_runtime_stack_top(self):
+        displacement = self.symbol_table.current_scope_size
+        self.pb_insert(self.ss_pop(), OPCode.ADD, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
+        self.pb_insert(self.pb_index, OPCode.SUB, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
+
+    def return_jp(self):
+        scope = self.symbol_table.current_scope.number
+        t = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_INDEX, t)
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(t))

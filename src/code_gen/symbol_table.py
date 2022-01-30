@@ -14,35 +14,34 @@ class IDItem:
         INT = "int"
         VOID = "void"
 
-    def __init__(
-            self, _id=None, scope=None, element_type=None, var=None, cell_no=0
-    ):
-        self.id = _id
+    def __init__(self, scope):
         self.scope = scope
-        self.element_type = element_type
-        self.var = var
-        self.cell_no = cell_no
+        self.id = ''
+        self.element_type = self.IDType.INT
+        self.var = self.IDVar.VARIABLE
+        self.cell_no = 1
 
     def __str__(self):
         return f'{self.id}:{self.scope.get_address(self.id)}'
 
 
 class Scope:
-    def __init__(self, number, parent=None, args_count=0, name=None):
+    def __init__(self, number, parent=None, name=None):
         self.number = number
-        self.id_items = []
         self.parent = parent
-        self.args_count = args_count
         self.name = name
+        self.id_items = []
+
+        self.args_count = 0
+        self.call_address = -1
 
     @property
     def last_item(self):
         return self.id_items[-1]
 
-    def insert(self, lookahead) -> IDItem:
-        item = IDItem(lookahead, self, None)
-        self.id_items.append(item)
-        return item
+    @property
+    def size(self):
+        return sum(id_item.cell_no for id_item in filter(lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items))
 
     def get_item(self, lookahead) -> Union[IDItem, None]:
         for item in self.id_items:
@@ -64,7 +63,7 @@ class Scope:
         return ' '.join(map(str, self.id_items))
 
     def add_symbol(self):
-        self.id_items.append(IDItem())
+        self.id_items.append(IDItem(self))
 
     def set_id(self, _id):
         self.id_items[-1].id = _id
@@ -81,6 +80,9 @@ class Scope:
     def increment_arg_count(self):
         self.args_count += 1
 
+    def set_call_address(self, call_address):
+        self.call_address = call_address
+
 
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
@@ -91,6 +93,10 @@ class SymbolTable:
     @property
     def current_scope(self) -> Scope:
         return self.stack[-1]
+
+    @property
+    def current_scope_size(self):
+        return self.current_scope.size
 
     def add_scope(self):
         self.stack.append(Scope(
@@ -119,3 +125,6 @@ class SymbolTable:
 
     def increment_arg_count(self):
         self.current_scope.increment_arg_count()
+
+    def set_call_address(self, call_address):
+        self.current_scope.set_call_address(call_address)
