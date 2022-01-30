@@ -2,49 +2,49 @@ import re
 
 GRAMMAR = """1. Program -> Declaration-list $
 2. Declaration-list -> #declare_list Declaration Declaration-list #end_list | EPSILON
-3. Declaration -> Declaration-initial Declaration-prime
-4. Declaration-initial -> Type-specifier ID
-5. Declaration-prime -> Fun-declaration-prime | Var-declaration-prime
-6. Var-declaration-prime -> ; | [ NUM ] ;
-7. Fun-declaration-prime -> #declare_func ( Params ) Compound-stmt #end_func
+3. Declaration -> #declare Declaration-initial Declaration-prime
+4. Declaration-initial -> #declare_type Type-specifier #declare_ID ID
+5. Declaration-prime -> # save #declare_func #add_scope Fun-declaration-prime #release_scope #skip | Var-declaration-prime
+6. Var-declaration-prime -> #declare_var ; | #declare_array [ #cell_no NUM ] ;
+7. Fun-declaration-prime -> ( Params ) #save #set_call_address Compound-stmt #set_runtime_stack_top #return_jp
 8. Type-specifier -> int | void
-9. Params -> int ID Param-prime Param-list | void
+9. Params -> #declare #arg_count #declare_type int #declare_ID ID Param-prime Param-list | void
 10. Param-list -> , Param Param-list | EPSILON
-11. Param -> Declaration-initial Param-prime
-12. Param-prime -> [ ] | EPSILON
+11. Param -> #declare #arg_count Declaration-initial Param-prime
+12. Param-prime -> #declare_array [ ] | #declare_var EPSILON
 13. Compound-stmt -> { Declaration-list Statement-list }
 14. Statement-list -> Statement Statement-list | EPSILON
 15. Statement -> Expression-stmt | Compound-stmt | Selection-stmt | Iteration-stmt | Return-stmt
-16. Expression-stmt -> Expression ; | break ; | ;
-17. Selection-stmt -> if ( Expression ) Statement Else-stmt
-18. Else-stmt -> endif | else Statement endif
-19. Iteration-stmt -> repeat Statement until ( Expression )
+16. Expression-stmt -> #stmt_flag Expression #pop_stmt_flag ; | break  #break_jp ; | ;
+17. Selection-stmt -> if ( Expression ) #save Statement Else-stmt
+18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
+19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat #break_assign
 20. Return-stmt -> return Return-stmt-prime
 21. Return-stmt-prime -> ; | Expression ;
-22. Expression -> Simple-expression-zegond | ID B
-23. B -> = Expression | [ Expression ] H | Simple-expression-prime
-24. H -> = Expression | G D C
+22. Expression -> Simple-expression-zegond | #pid ID B
+23. B -> #assign_id = Expression #assign | #assign_id [ Expression #displace ] H | #apply_id  Simple-expression-prime
+24. H -> = Expression #assign | #get_indirect_value G D C
 25. Simple-expression-zegond -> Additive-expression-zegond C
 26. Simple-expression-prime -> Additive-expression-prime C
-27. C -> Relop Additive-expression | EPSILON
+27. C -> #relop Relop Additive-expression #cmp | EPSILON
 28. Relop -> < | ==
 29. Additive-expression -> Term D
 30. Additive-expression-prime -> Term-prime D
 31. Additive-expression-zegond -> Term-zegond D
-32. D -> Addop Term D | EPSILON
+32. D -> #addop Addop Term #add D | EPSILON
 33. Addop -> + | -
 34. Term -> Factor G
 35. Term-prime -> Factor-prime G
 36. Term-zegond -> Factor-zegond G
-37. G -> * Factor G | EPSILON
-38. Factor -> ( Expression ) | ID Var-call-prime | NUM
-39. Var-call-prime -> ( Args ) | Var-prime
-40. Var-prime -> [ Expression ] | EPSILON
-41. Factor-prime -> ( Args ) | EPSILON
-42. Factor-zegond -> ( Expression ) | NUM
+37. G -> * Factor #mult G | EPSILON
+38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
+39. Var-call-prime -> #update_displays #reset_arg_no ( Args ) #func_call | Var-prime
+40. Var-prime ->  #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
+41. Factor-prime -> #get_runtime_mem ( Args ) #func_call | EPSILON
+42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
-44. Arg-list -> Expression Arg-list-prime
-45. Arg-list-prime -> , Expression Arg-list-prime | EPSILON"""
+44. Arg-list -> Expression #set_arg Arg-list-prime
+45. Arg-list-prime -> , Expression #set_arg Arg-list-prime | EPSILON"""
 
 
 def sub_illegal_characters(rule, dollar_sign, epsilon):
