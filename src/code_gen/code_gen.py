@@ -13,6 +13,7 @@ class CodeGen:
     def __init__(self):
         self.lookahead = None
         self.scopes = {}
+        self.scope_numbers = set()
         self.symbol_table = SymbolTable()
         self.semantic_stack = []
         self.control_stack = []
@@ -60,6 +61,10 @@ class CodeGen:
     def constant(cls, val):
         return '#%s' % val
 
+    @classmethod
+    def get_display_address(cls, scope):
+        return cls._TEMP_ADDRESS + cls._WORD_SIZE + cls._WORD_SIZE * scope
+
     def get_temp_var(self):
         self.assembler.move_temp_pointer(self._WORD_SIZE)
         return self.assembler.temp_address - self._WORD_SIZE
@@ -100,15 +105,20 @@ class CodeGen:
 
     def declare_func(self):
         self.symbol_table.set_var(IDItem.IDVar.FUNCTION)
+        self.symbol_table.add_scope()
 
-    def cell_no(self):
-        pass
+    def cell_no(self, lookahead):
+        self.symbol_table.set_cell_no(int(lookahead))
 
-    def arg_no(self):
-        pass
+    def arg_count(self):
+        self.symbol_table.increment_arg_count()
 
     def add_scope(self):
-        pass
+        scope = self.symbol_table.current_scope.number + 1
+        if scope not in self.scope_numbers:
+            display_address = self.get_display_address(scope)
+            self.pb_insert(OPCode.ASSIGN, self.constant(-1), display_address)
+            self.scope_numbers.add(scope)
 
     def release_scope(self):
         func_name = self.symbol_table.current_scope.name

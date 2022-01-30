@@ -75,6 +75,12 @@ class Scope:
     def set_var(self, var):
         self.id_items[-1].var = var
 
+    def set_cell_no(self, cell_no):
+        self.id_items[-1].cell_no = cell_no
+
+    def increment_arg_count(self):
+        self.args_count += 1
+
 
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
@@ -86,11 +92,11 @@ class SymbolTable:
     def current_scope(self) -> Scope:
         return self.stack[-1]
 
-    def add_scope(self, lookahead):
+    def add_scope(self):
         self.stack.append(Scope(
             number=len(self.stack),
             parent=self.current_scope,
-            name=lookahead
+            name=self.current_scope.last_item.id
         ))
 
     def pop(self):
@@ -107,3 +113,9 @@ class SymbolTable:
 
     def set_var(self, var):
         self.current_scope.set_var(var)
+
+    def set_cell_no(self, cell_no):
+        self.current_scope.set_cell_no(cell_no)
+
+    def increment_arg_count(self):
+        self.current_scope.increment_arg_count()
