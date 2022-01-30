@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from src.code_gen.assembler import Assembler, OPCode
-from src.code_gen.symbol_table import SymbolTable
+from src.code_gen.symbol_table import SymbolTable, IDItem
 
 
 class CodeGen:
@@ -84,22 +84,22 @@ class CodeGen:
         self.routines[semantic_action]()
 
     def declare(self):
-        pass
+        self.symbol_table.add_symbol()
 
-    def declare_id(self):
-        pass
+    def declare_id(self, lookahead):
+        self.symbol_table.set_id(lookahead)
+
+    def declare_type(self, lookahead):
+        self.symbol_table.set_type(lookahead)
 
     def declare_var(self):
-        pass
-
-    def declare_type(self):
-        pass
+        self.symbol_table.set_var(IDItem.IDVar.VARIABLE)
 
     def declare_list(self):
-        pass
+        self.symbol_table.set_var(IDItem.IDVar.ARRAY)
 
     def declare_func(self):
-        pass
+        self.symbol_table.set_var(IDItem.IDVar.FUNCTION)
 
     def cell_no(self):
         pass

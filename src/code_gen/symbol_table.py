@@ -1,19 +1,30 @@
+from enum import Enum
 from typing import Union, Tuple
 
 from src.scanner.utils import Language
 
 
 class IDItem:
+    class IDVar(Enum):
+        VARIABLE = "var"
+        ARRAY = "arr"
+        FUNCTION = "func"
+
+    class IDType(Enum):
+        INT = "int"
+        VOID = "void"
+
     def __init__(
-            self, lookahead=None, scope=None, element_type=None, cell_no=0
+            self, _id=None, scope=None, element_type=None, var=None, cell_no=0
     ):
-        self.lookahead = lookahead
+        self.id = _id
         self.scope = scope
         self.element_type = element_type
+        self.var = var
         self.cell_no = cell_no
 
     def __str__(self):
-        return f'{self.lookahead}:{self.scope.get_address(self.lookahead)}'
+        return f'{self.id}:{self.scope.get_address(self.id)}'
 
 
 class Scope:
@@ -35,7 +46,7 @@ class Scope:
 
     def get_item(self, lookahead) -> Union[IDItem, None]:
         for item in self.id_items:
-            if item.lookahead == lookahead:
+            if item.id == lookahead:
                 return item
         if self.parent:
             return self.parent.get_item(lookahead)
@@ -43,7 +54,7 @@ class Scope:
 
     def get_address(self, lookahead) -> Union[Tuple[int, int], None]:
         for index, item in enumerate(self.id_items):
-            if item.lookahead == lookahead:
+            if item.id == lookahead:
                 return self.number, index
         if self.parent:
             return self.parent.get_address(lookahead)
@@ -51,6 +62,18 @@ class Scope:
 
     def __str__(self):
         return ' '.join(map(str, self.id_items))
+
+    def add_symbol(self):
+        self.id_items.append(IDItem())
+
+    def set_id(self, _id):
+        self.id_items[-1].id = _id
+
+    def set_type(self, _type):
+        self.id_items[-1].element_type = IDItem.IDType(_type)
+
+    def set_var(self, var):
+        self.id_items[-1].var = var
 
 
 class SymbolTable:
@@ -73,7 +96,14 @@ class SymbolTable:
     def pop(self):
         return self.stack.pop()
 
-    def add_symbol(self, lookahead):
-        token_type = lookahead[0]
-        if token_type not in self.keyword:
-            self.current_scope.insert(lookahead)
+    def add_symbol(self):
+        self.current_scope.add_symbol()
+
+    def set_id(self, _id):
+        self.current_scope.set_id(_id)
+
+    def set_type(self, _type):
+        self.current_scope.set_type(_type)
+
+    def set_var(self, var):
+        self.current_scope.set_var(var)
