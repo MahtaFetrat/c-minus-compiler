@@ -278,6 +278,7 @@ class CodeGen:
         var = self.symbol_table.get_id_var(_id)
 
         if var == IDItem.IDVar.FUNCTION:
+            self.ss_push(_id)
             return
 
         scope, index = self.symbol_table.get_address(_id)
@@ -295,6 +296,7 @@ class CodeGen:
         var = self.symbol_table.get_id_var(_id)
 
         if var == IDItem.IDVar.FUNCTION:
+            self.ss_push(_id)
             return
 
         scope, index = self.symbol_table.get_address(_id)
@@ -309,7 +311,7 @@ class CodeGen:
 
         ar_temp = self.get_temp_var()
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), ar_temp)
-        self.pb_insert(self.pb_index, self._RUNTIME_STACK_TOP, self.get_display_address(scope))
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope))
 
         cmp_temp = self.get_temp_var()
         self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)

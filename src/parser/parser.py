@@ -30,6 +30,7 @@ class Parser:
     def parse(self):
         diagram = self._transition_diagram[Parser.START_STATE]
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
+        self._write_parse_tree(tree)
         self.close()
 
     @staticmethod
