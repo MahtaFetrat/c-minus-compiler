@@ -1,15 +1,15 @@
 from typing import Dict, Any
 
 from src.code_gen.assembler import Assembler, OPCode
-from src.code_gen.symbol_table import SymbolTable, IDItem
+from src.code_gen.symbol_table import SymbolTable, IDItem, Scope
 
 
 class CodeGen:
     _OUTPUT_FILENAME = "output.txt"
     _WORD_SIZE = 4
     _DATA_ADDRESS = 100
-    _TEMP_ADDRESS = 500
-    _RUNTIME_STACK_TOP = _TEMP_ADDRESS
+    _RUNTIME_STACK_TOP = 500
+    _TEMP_ADDRESS = _RUNTIME_STACK_TOP + 11 * _WORD_SIZE
     _STACK_ADDRESS = 1000
 
     _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
@@ -19,9 +19,9 @@ class CodeGen:
 
     def __init__(self):
         self.lookahead = None
-        self.scopes = {}
         self.scope_numbers = set()
         self.symbol_table = SymbolTable()
+        self.scopes = {"output": self.symbol_table.get_output_func_scope()}
         self.semantic_stack = []
         self.control_stack = []
         self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS)
@@ -88,7 +88,7 @@ class CodeGen:
 
     @classmethod
     def get_display_address(cls, scope):
-        return cls._TEMP_ADDRESS + cls._WORD_SIZE + cls._WORD_SIZE * scope
+        return cls._RUNTIME_STACK_TOP + cls._WORD_SIZE + cls._WORD_SIZE * scope
 
     @classmethod
     def get_variable_displacement(cls, index):
@@ -249,7 +249,7 @@ class CodeGen:
         self.symbol_table.set_call_address(self.pb_index - 1)
 
     def set_runtime_stack_top(self, lookahead):
-        displacement = self.symbol_table.current_scope_size
+        displacement = self._WORD_SIZE * self.symbol_table.current_scope_size + self._VARIABLES_DISPLACEMENT
         self.pb_insert(self.ss_pop(), OPCode.ADD, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
         self.pb_insert(self.pb_index, OPCode.SUB, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
 
@@ -359,12 +359,12 @@ class CodeGen:
         self.arg_no = self.arg_no + 1
 
     def save_return_val(self, lookahead):
-            temp = self.get_temp_var()
-            scope = self.symbol_table.current_scope.number
-            self.pb_insert(
-                self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_VALUE_DISPLACEMENT, temp,
-            )
-            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.indirect(temp))
+        temp = self.get_temp_var()
+        scope = self.symbol_table.current_scope.number
+        self.pb_insert(
+            self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_VALUE_DISPLACEMENT, temp,
+        )
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.indirect(temp))
 
     def get_return_val(self, lookahead):
         scope = self.get_function_scope(self.ss_pop())
@@ -386,5 +386,6 @@ class CodeGen:
         return self.symbol_table.get_function_scope(function_name)
 
     def close(self):
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.pb_index)
         with open(self._OUTPUT_FILENAME, "w") as f:
             f.write(self.assembler.code)

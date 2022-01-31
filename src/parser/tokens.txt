@@ -9,3 +9,5 @@
 11.	(SYMBOL, }) 
 13.	(KEYWORD, void) (ID, main) (SYMBOL, () (KEYWORD, void) (SYMBOL, )) 
 14.	(SYMBOL, {) 
+15.	(ID, output) (SYMBOL, () (ID, fact) (SYMBOL, () (NUM, 3) (SYMBOL, )) (SYMBOL, )) (SYMBOL, ;) 
+16.	(SYMBOL, }) 
