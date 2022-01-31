@@ -385,8 +385,18 @@ class CodeGen:
             return self.scopes[function_name]
         return self.symbol_table.get_function_scope(function_name)
 
-    def close(self):
+    def insert_main_call(self):
+        scope = self.get_function_scope("main")
+
+        temp = self.get_temp_var()
+        self.pb_insert(
+            self.pb_index, OPCode.ADD, self.get_display_address(scope.number), self._RETURN_ADDRESS_DISPLACEMENT, temp,
+        )
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.pb_index + 2, self.indirect(temp))
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(scope.call_address))
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
-        print(self.assembler.code)
+
+    def close(self):
+        self.insert_main_call()
         with open(self._OUTPUT_FILENAME, "w") as f:
             f.write(self.assembler.code)
