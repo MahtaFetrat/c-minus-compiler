@@ -1,0 +1,14 @@
+0.	until
+1.	break
+2.	endif
+3.	n
+4.	main
+5.	else
+6.	if
+7.	return
+8.	output
+9.	repeat
+10.	f
+11.	int
+12.	void
+13.	fact
