@@ -117,7 +117,6 @@ class CodeGen:
         self.control_stack.append(item)
 
     def call(self, semantic_action, lookahead):
-        print(self.semantic_stack)
         self.lookahead = lookahead[1]
         self.routines[semantic_action](self.lookahead)
 

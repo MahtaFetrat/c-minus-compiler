@@ -40,7 +40,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
 39. Var-call-prime -> #update_displays #reset_arg_no ( Args ) #func_call | Var-prime
 40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #get_runtime_mem ( Args ) #func_call | EPSILON
+41. Factor-prime -> #update_displays #reset_arg_no ( Args ) #func_call | EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #set_arg Arg-list-prime
