@@ -1,7 +1,7 @@
 import re
 
 GRAMMAR = """1. Program -> Declaration-list $
-2. Declaration-list -> #declare_list Declaration Declaration-list #end_list | EPSILON
+2. Declaration-list -> Declaration Declaration-list | EPSILON
 3. Declaration -> #declare Declaration-initial Declaration-prime
 4. Declaration-initial -> #declare_type Type-specifier #declare_ID ID
 5. Declaration-prime -> # save #declare_func #add_scope Fun-declaration-prime #release_scope #skip | Var-declaration-prime

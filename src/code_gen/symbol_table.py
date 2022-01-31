@@ -16,13 +16,13 @@ class IDItem:
 
     def __init__(self, scope):
         self.scope = scope
-        self.id = ''
+        self.id = ""
         self.element_type = self.IDType.INT
         self.var = self.IDVar.VARIABLE
         self.cell_no = 1
 
     def __str__(self):
-        return f'{self.id}:{self.scope.get_address(self.id)}'
+        return f"{self.id}:{self.scope.get_address(self.id)}"
 
 
 class Scope:
@@ -41,7 +41,12 @@ class Scope:
 
     @property
     def size(self):
-        return sum(id_item.cell_no for id_item in filter(lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items))
+        return sum(
+            id_item.cell_no
+            for id_item in filter(
+                lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items
+            )
+        )
 
     def get_item(self, lookahead) -> Union[IDItem, None]:
         for item in self.id_items:
@@ -60,7 +65,7 @@ class Scope:
         return None
 
     def __str__(self):
-        return ' '.join(map(str, self.id_items))
+        return " ".join(map(str, self.id_items))
 
     def add_symbol(self):
         self.id_items.append(IDItem(self))
@@ -107,11 +112,13 @@ class SymbolTable:
         return self.current_scope.size
 
     def add_scope(self):
-        self.stack.append(Scope(
-            number=len(self.stack),
-            parent=self.current_scope,
-            name=self.current_scope.last_item.id
-        ))
+        self.stack.append(
+            Scope(
+                number=len(self.stack),
+                parent=self.current_scope,
+                name=self.current_scope.last_item.id,
+            )
+        )
 
     def pop(self):
         return self.stack.pop()

@@ -17,6 +17,8 @@ class Diagram:
                 tree, lookahead, state = state.transfer(lookahead, scanner, parser)
                 if tree:
                     subtrees.append(tree)
+                    if tree.root_name.startswith("#"):
+                        parser.code_gen.call(tree.root_name, lookahead)
             except ParseException as exc:
                 parser.write_error(str(exc))
                 if isinstance(exc, IllegalException):

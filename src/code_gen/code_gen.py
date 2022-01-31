@@ -5,6 +5,7 @@ from src.code_gen.symbol_table import SymbolTable, IDItem
 
 
 class CodeGen:
+    _OUTPUT_FILENAME = "output.txt"
     _WORD_SIZE = 4
     _DATA_ADDRESS = 100
     _TEMP_ADDRESS = 500
@@ -22,52 +23,54 @@ class CodeGen:
         self.symbol_table = SymbolTable()
         self.semantic_stack = []
         self.control_stack = []
-        self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS)
+        self.assembler = Assembler(
+            self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS
+        )
         self.arg_no = 0
         self.routines: Dict[str, Any] = {
-            '#declare': self.declare,
-            '#declare_id': self.declare_id,
-            '#declare_var': self.declare_var,
-            '#declare_type': self.declare_type,
-            '#declare_array': self.declare_array,
-            '#declare_func': self.declare_func,
-            '#cell_no': self.cell_no,
-            '#arg_no': self.arg_no,
-            '#add_scope': self.add_scope,
-            '#release_scope': self.release_scope,
-            '#pid': self.pid,
-            '#pnum': self.pnum,
-            '#assign': self.assign,
-            '#displace': self.displace,
-            '#save': self.save,
-            '#pop': self.pop,
-            '#jp': self.jp,
-            '#break_jp': self.break_jp,
-            '#jpf': self.jpf,
-            '#jpf_save': self.jpf_save,
-            '#break_label': self.break_label,
-            '#label': self.label,
-            '#repeat': self.repeat,
-            '#break_assign': self.break_assign,
-            '#relop': self.relop,
-            '#cmp': self.cmp,
-            '#skip': self.skip,
-            '#set_call_address': self.set_call_address,
-            '#set_runtime_stack_top': self.set_runtime_stack_top,
-            '#return_jp': self.return_jp,
-            '#arg_count': self.arg_count,
-            '#stmt_flag': self.stmt_flag,
-            '#pop_stmt _flag': self.pop_stmt_flag,
-            '#assign_id': self.assign_id,
-            '#apply_id': self.apply_id,
-            '#get_indirect_value': self.get_indirect_value,
-            '#addop': self.addop,
-            '#add': self.add,
-            '#mult': self.mult,
-            '#update_displays': self.update_displays,
-            '#reset_arg_no': self.reset_arg_no,
-            '#func_call': self.func_call,
-            '#set_arg': self.set_arg
+            "#declare": self.declare,
+            "#declare-ID": self.declare_id,
+            "#declare-var": self.declare_var,
+            "#declare-type": self.declare_type,
+            "#declare-array": self.declare_array,
+            "#declare-func": self.declare_func,
+            "#cell-no": self.cell_no,
+            "#arg-no": self.arg_no,
+            "#add-scope": self.add_scope,
+            "#release-scope": self.release_scope,
+            "#pid": self.pid,
+            "#pnum": self.pnum,
+            "#assign": self.assign,
+            "#displace": self.displace,
+            "#save": self.save,
+            "#pop": self.pop,
+            "#jp": self.jp,
+            "#break-jp": self.break_jp,
+            "#jpf": self.jpf,
+            "#jpf-save": self.jpf_save,
+            "#break-label": self.break_label,
+            "#label": self.label,
+            "#repeat": self.repeat,
+            "#break-assign": self.break_assign,
+            "#relop": self.relop,
+            "#cmp": self.cmp,
+            "#skip": self.skip,
+            "#set-call-address": self.set_call_address,
+            "#set-runtime-stack-top": self.set_runtime_stack_top,
+            "#return-jp": self.return_jp,
+            "#arg-count": self.arg_count,
+            "#stmt-flag": self.stmt_flag,
+            "#pop-stmt-flag": self.pop_stmt_flag,
+            "#assign-id": self.assign_id,
+            "#apply-id": self.apply_id,
+            "#get-indirect-value": self.get_indirect_value,
+            "#addop": self.addop,
+            "#add": self.add,
+            "#mult": self.mult,
+            "#update-displays": self.update_displays,
+            "#reset-arg-no": self.reset_arg_no,
+            "#func-call": self.func_call,
+            "#set-arg": self.set_arg,
         }
 
     @property
@@ -76,11 +79,11 @@ class CodeGen:
 
     @classmethod
     def indirect(cls, address):
-        return '@%s' % address
+        return "@%s" % address
 
     @classmethod
     def constant(cls, val):
-        return '#%s' % val
+        return "#%s" % val
 
     @classmethod
     def get_display_address(cls, scope):
@@ -116,10 +119,10 @@ class CodeGen:
         self.control_stack.append(item)
 
     def call(self, semantic_action, lookahead):
-        self.lookahead = lookahead
-        self.routines[semantic_action]()
+        self.lookahead = lookahead[1]
+        self.routines[semantic_action](self.lookahead)
 
-    def declare(self):
+    def declare(self, lookahead):
         self.symbol_table.add_symbol()
 
     def declare_id(self, lookahead):
@@ -156,10 +159,10 @@ class CodeGen:
         self.scopes[func_name] = self.symbol_table.pop()
 
     def pid(self, lookahead):
-        self.ss_push(lookahead[1])
+        self.ss_push(lookahead)
 
     def pnum(self, lookahead):
-        self.ss_push(self.constant(lookahead[1]))
+        self.ss_push(self.constant(lookahead))
 
     def assign(self):
         rhs = self.ss_pop()
@@ -168,7 +171,9 @@ class CodeGen:
 
     def displace(self):
         displacement = self.ss_pop()
-        self.pb_insert(self.pb_index, OPCode.ADD, displacement, self.ss_peek(), self.ss_peek())
+        self.pb_insert(
+            self.pb_index, OPCode.ADD, displacement, self.ss_peek(), self.ss_peek()
+        )
 
     def save(self):
         self.ss_push(self.pb_index)
@@ -207,25 +212,29 @@ class CodeGen:
         self.pb_insert(self.ss_pop(), OPCode.ASSIGN, self.pb_index, self.cs_pop())
 
     def relop(self, lookahead):
-        self.ss_push('LT' if lookahead[1] == '<' else 'EQ')
+        self.ss_push("LT" if lookahead == "<" else "EQ")
 
     def cmp(self):
         second_operand = self.ss_pop()
         operator = self.ss_pop()
         first_operand = self.ss_pop()
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
+        self.pb_insert(
+            self.pb_index, OPCode(operator), first_operand, second_operand, temp
+        )
         self.ss_push(temp)
 
     def addop(self, lookahead):
-        self.ss_push('ADD' if lookahead[1]=='+' else 'SUB')
+        self.ss_push("ADD" if lookahead == "+" else "SUB")
 
     def add(self):
         second_operand = self.ss_pop()
         operator = self.ss_pop()
         first_operand = self.ss_pop()
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
+        self.pb_insert(
+            self.pb_index, OPCode(operator), first_operand, second_operand, temp
+        )
         self.ss_push(temp)
 
     def mult(self):
@@ -246,14 +255,32 @@ class CodeGen:
 
     def set_runtime_stack_top(self):
         displacement = self.symbol_table.current_scope_size
-        self.pb_insert(self.ss_pop(), OPCode.ADD, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
-        self.pb_insert(self.pb_index, OPCode.SUB, self._RUNTIME_STACK_TOP, displacement, self._RUNTIME_STACK_TOP)
+        self.pb_insert(
+            self.ss_pop(),
+            OPCode.ADD,
+            self._RUNTIME_STACK_TOP,
+            displacement,
+            self._RUNTIME_STACK_TOP,
+        )
+        self.pb_insert(
+            self.pb_index,
+            OPCode.SUB,
+            self._RUNTIME_STACK_TOP,
+            displacement,
+            self._RUNTIME_STACK_TOP,
+        )
 
     def return_jp(self):
         scope = self.symbol_table.current_scope.number
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_ADDRESS_DISPLACEMENT,
-                       temp)
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope),
+            self._RETURN_ADDRESS_DISPLACEMENT,
+            temp,
+        )
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
         self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(temp))
 
     def stmt_flag(self):
@@ -275,8 +302,12 @@ class CodeGen:
 
         scope, index = self.symbol_table.get_address(_id)
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp)
+        self.pb_insert(
+            self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp
+        )
+        self.pb_insert(
+            self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp
+        )
 
         if var != IDItem.IDVar.ARRAY:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
@@ -292,8 +323,12 @@ class CodeGen:
 
         scope, index = self.symbol_table.get_address()
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp)
+        self.pb_insert(
+            self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp
+        )
+        self.pb_insert(
+            self.pb_index, OPCode.ADD, temp, self.get_variable_displacement(index), temp
+        )
 
         self.ss_push(temp)
 
@@ -301,13 +336,22 @@ class CodeGen:
         scope, index = self.symbol_table.get_address(self.ss_peek())
 
         ar_temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), ar_temp)
-        self.pb_insert(self.pb_index, self._RUNTIME_STACK_TOP, self.get_display_address(scope))
+        self.pb_insert(
+            self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), ar_temp
+        )
+        self.pb_insert(
+            self.pb_index, self._RUNTIME_STACK_TOP, self.get_display_address(scope)
+        )
 
         cmp_temp = self.get_temp_var()
         self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)
         self.pb_insert(self.pb_index, OPCode.JUMP_IF, cmp_temp, self.pb_index + 2)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ASSIGN,
+            ar_temp,
+            self.indirect(self._RUNTIME_STACK_TOP),
+        )
 
     def reset_arg_no(self):
         self.arg_no = 0
@@ -317,20 +361,38 @@ class CodeGen:
         call_address = scope.call_address
 
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope.number), self._RETURN_ADDRESS_DISPLACEMENT, temp)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.pb_index + 2, self.indirect(temp))
-        self.pb_insert(self.pb_index, self.constant(call_address))
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope.number),
+            self._RETURN_ADDRESS_DISPLACEMENT,
+            temp,
+        )
+        self.pb_insert(
+            self.pb_index, OPCode.ASSIGN, self.pb_index + 2, self.indirect(temp)
+        )
+        self.pb_insert(self.pb_index, OPCode.JUMP, call_address)
 
     def get_indirect_value(self):
         ss_top = self.ss_pop()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(self.ss_top), ss_top)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(ss_top), ss_top)
 
     def set_arg(self):
         arg = self.ss_pop()
         scope = self.scopes[self.ss_peek()]
 
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ADD, self.get_display_address(scope.number), self.get_variable_displacement(self.arg_no), temp)
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope.number),
+            self.get_variable_displacement(self.arg_no),
+            temp,
+        )
         self.pb_insert(self.pb_index, OPCode.ASSIGN, arg, self.indirect(temp))
 
         self.arg_no = self.arg_no + 1
+
+    def close(self):
+        with open(self._OUTPUT_FILENAME, "w") as f:
+            f.write(self.assembler.code)
