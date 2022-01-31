@@ -1,3 +1,0 @@
-2.	(KEYWORD, void) (ID, fu) (SYMBOL, () (KEYWORD, int) (ID, n) (SYMBOL, )) (SYMBOL, {) 
-3.	(KEYWORD, return) (ID, n) (SYMBOL, ;) 
-4.	(SYMBOL, }) 

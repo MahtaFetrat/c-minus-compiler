@@ -387,5 +387,6 @@ class CodeGen:
 
     def close(self):
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
+        print(self.assembler.code)
         with open(self._OUTPUT_FILENAME, "w") as f:
             f.write(self.assembler.code)
