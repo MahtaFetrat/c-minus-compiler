@@ -96,6 +96,11 @@ class Scope:
             return self.parent.get_id_var(_id)
         return None
 
+    def get_function_scope(self, function_name):
+        if self.name == function_name:
+            return self
+        return self.parent.get_function_scope(function_name)
+
 
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
@@ -149,3 +154,6 @@ class SymbolTable:
 
     def get_address(self, _id):
         return self.current_scope.get_address(_id)
+
+    def get_function_scope(self, function_name):
+        return self.current_scope.get_function_scope(function_name)

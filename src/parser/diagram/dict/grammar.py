@@ -20,7 +20,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
 19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat #break_assign
 20. Return-stmt -> return Return-stmt-prime
-21. Return-stmt-prime -> ; | Expression ;
+21. Return-stmt-prime -> ; | Expression #save_return_val ;
 22. Expression -> Simple-expression-zegond | #pid ID B
 23. B -> #assign_id = Expression #assign | #assign_id [ Expression #displace ] H | #apply_id Simple-expression-prime
 24. H -> = Expression #assign | #get_indirect_value G D C
@@ -38,9 +38,9 @@ GRAMMAR = """1. Program -> Declaration-list $
 36. Term-zegond -> Factor-zegond G
 37. G -> * Factor #mult G | EPSILON
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
-39. Var-call-prime -> #update_displays #reset_arg_no ( Args ) #func_call | Var-prime
+39. Var-call-prime -> #update_displays #reset_arg_no ( Args ) #func_call #get_return_val | Var-prime
 40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #update_displays #reset_arg_no ( Args ) #func_call | EPSILON
+41. Factor-prime -> #update_displays #reset_arg_no ( Args ) #func_call #get_return_val | EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #set_arg Arg-list-prime

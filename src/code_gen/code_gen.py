@@ -14,7 +14,8 @@ class CodeGen:
 
     _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
     _RETURN_ADDRESS_DISPLACEMENT = 1 * _WORD_SIZE
-    _VARIABLES_DISPLACEMENT = 2 * _WORD_SIZE
+    _RETURN_VALUE_DISPLACEMENT = 2 * _WORD_SIZE
+    _VARIABLES_DISPLACEMENT = 3 * _WORD_SIZE
 
     def __init__(self):
         self.lookahead = None
@@ -69,6 +70,8 @@ class CodeGen:
             "#reset-arg-no": self.reset_arg_no,
             "#func-call": self.func_call,
             "#set-arg": self.set_arg,
+            "#save-return-val": self.save_return_val,
+            "#get-return-val": self.get_return_val
         }
 
     @property
@@ -322,8 +325,7 @@ class CodeGen:
         self.arg_no = 0
 
     def func_call(self, lookahead):
-        scope = self.scopes[self.ss_pop()]
-        call_address = scope.call_address
+        scope = self.get_function_scope(self.ss_peek())
 
         temp = self.get_temp_var()
         self.pb_insert(
@@ -334,7 +336,7 @@ class CodeGen:
             temp,
         )
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.pb_index + 2, self.indirect(temp))
-        self.pb_insert(self.pb_index, OPCode.JUMP, call_address)
+        self.pb_insert(self.pb_index, OPCode.JUMP, scope.call_address)
 
     def get_indirect_value(self, lookahead):
         ss_top = self.ss_pop()
@@ -342,7 +344,7 @@ class CodeGen:
 
     def set_arg(self, lookahead):
         arg = self.ss_pop()
-        scope = self.scopes[self.ss_peek()]
+        scope = self.get_function_scope(self.ss_peek())
 
         temp = self.get_temp_var()
         self.pb_insert(
@@ -355,6 +357,33 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, arg, self.indirect(temp))
 
         self.arg_no = self.arg_no + 1
+
+    def save_return_val(self, lookahead):
+            temp = self.get_temp_var()
+            scope = self.symbol_table.current_scope.number
+            self.pb_insert(
+                self.pb_index, OPCode.ADD, self.get_display_address(scope), self._RETURN_VALUE_DISPLACEMENT, temp,
+            )
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.indirect(temp))
+
+    def get_return_val(self, lookahead):
+        scope = self.get_function_scope(self.ss_pop())
+
+        temp = self.get_temp_var()
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope.number),
+            self._RETURN_VALUE_DISPLACEMENT,
+            temp,
+        )
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
+        self.ss_push(temp)
+
+    def get_function_scope(self, function_name):
+        if function_name in self.scopes:
+            return self.scopes[function_name]
+        return self.symbol_table.get_function_scope(function_name)
 
     def close(self):
         with open(self._OUTPUT_FILENAME, "w") as f:
