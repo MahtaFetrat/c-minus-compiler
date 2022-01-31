@@ -52,3 +52,7 @@ class Parser:
         if not self._syntax_error_encountered:
             self._error_out_file.write("There is no syntax error.")
         self._error_out_file.close()
+
+
+parser = Parser(f"/home/matt/PycharmProjects/compiler/test/code_gen/test_files/T1/input.txt")
+parser.parse()

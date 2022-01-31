@@ -111,11 +111,11 @@ class SymbolTable:
         self.global_scope.set_id("output")
         self.global_scope.set_var(IDItem.IDVar.FUNCTION)
         self.global_scope.set_type(IDItem.IDType.VOID)
-        self.global_scope.set_call_address(1)
         self.stack = [self.global_scope]
 
     def get_output_func_scope(self):
         output_scope = Scope(1, self.global_scope, "output")
+        output_scope.set_call_address(3)
         output_scope.add_symbol()
         output_scope.set_var(IDItem.IDVar.VARIABLE)
         output_scope.set_type(IDItem.IDType.INT)
