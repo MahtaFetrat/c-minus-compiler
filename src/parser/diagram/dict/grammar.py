@@ -4,7 +4,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 2. Declaration-list -> Declaration Declaration-list | EPSILON
 3. Declaration -> #declare Declaration-initial Declaration-prime
 4. Declaration-initial -> #declare_type Type-specifier #declare_ID ID
-5. Declaration-prime -> #save #declare_func #add_scope Fun-declaration-prime #release_scope #skip | Var-declaration-prime
+5. Declaration-prime -> #declare_func #add_scope #save Fun-declaration-prime #release_scope #skip | Var-declaration-prime
 6. Var-declaration-prime -> #declare_var ; | #declare_array [ #cell_no NUM ] ;
 7. Fun-declaration-prime -> ( Params ) #save #set_call_address Compound-stmt #set_runtime_stack_top #return_jp
 8. Type-specifier -> int | void

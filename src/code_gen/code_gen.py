@@ -19,12 +19,12 @@ class CodeGen:
 
     def __init__(self):
         self.lookahead = None
-        self.scope_numbers = set()
         self.symbol_table = SymbolTable()
         self.scopes = {"output": self.symbol_table.get_output_func_scope()}
+        self.scope_numbers = {1}
         self.semantic_stack = []
         self.control_stack = []
-        self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS)
+        self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS, self._RUNTIME_STACK_TOP)
         self.arg_no = 0
         self.routines: Dict[str, Any] = {
             "#declare": self.declare,
@@ -386,6 +386,6 @@ class CodeGen:
         return self.symbol_table.get_function_scope(function_name)
 
     def close(self):
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
         with open(self._OUTPUT_FILENAME, "w") as f:
             f.write(self.assembler.code)

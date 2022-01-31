@@ -111,7 +111,7 @@ class SymbolTable:
         self.global_scope.set_id("output")
         self.global_scope.set_var(IDItem.IDVar.FUNCTION)
         self.global_scope.set_type(IDItem.IDType.VOID)
-        self.global_scope.set_call_address(0)
+        self.global_scope.set_call_address(1)
         self.stack = [self.global_scope]
 
     def get_output_func_scope(self):
@@ -119,7 +119,6 @@ class SymbolTable:
         output_scope.add_symbol()
         output_scope.set_var(IDItem.IDVar.VARIABLE)
         output_scope.set_type(IDItem.IDType.INT)
-        output_scope.set_call_address(0)
 
         return output_scope
 
