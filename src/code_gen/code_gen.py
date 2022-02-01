@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from src.code_gen.assembler import Assembler, OPCode
-from src.code_gen.symbol_table import SymbolTable, IDItem, Scope
+from src.code_gen.symbol_table import SymbolTable, IDItem
 
 
 class CodeGen:
@@ -9,8 +9,8 @@ class CodeGen:
     _WORD_SIZE = 4
     _DATA_ADDRESS = 100
     _RUNTIME_STACK_TOP = 500
-    _TEMP_ADDRESS = _RUNTIME_STACK_TOP + 11 * _WORD_SIZE
-    _STACK_ADDRESS = 1000
+    _STACK_ADDRESS = _RUNTIME_STACK_TOP + 11 * _WORD_SIZE
+    _TEMP_ADDRESS = 3012
 
     _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
     _RETURN_ADDRESS_DISPLACEMENT = 1 * _WORD_SIZE
@@ -66,10 +66,12 @@ class CodeGen:
             "#addop": self.addop,
             "#add": self.add,
             "#mult": self.mult,
+            "#pruntime-stack-top": self.pruntime_stack_top,
             "#update-displays": self.update_displays,
             "#reset-arg-no": self.reset_arg_no,
             "#func-call": self.func_call,
             "#set-arg": self.set_arg,
+            "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
             "#get-return-val": self.get_return_val
         }
@@ -121,6 +123,8 @@ class CodeGen:
 
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
+        print(semantic_action, end='')
+        print(self.semantic_stack)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
@@ -321,7 +325,13 @@ class CodeGen:
 
         self.ss_push(temp)
 
+    def pruntime_stack_top(self, lookahead):
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, temp)
+        self.ss_push(temp)
+
     def update_displays(self, lookahead):
+        self.ss_pop()
         scope = self.get_function_scope(self.ss_peek())
 
         ar_temp = self.get_temp_var()
@@ -356,19 +366,30 @@ class CodeGen:
 
     def set_arg(self, lookahead):
         arg = self.ss_pop()
-        scope = self.get_function_scope(self.ss_peek())
 
         temp = self.get_temp_var()
         self.pb_insert(
             self.pb_index,
             OPCode.ADD,
-            self.get_display_address(scope.number),
+            self.ss_peek(),
             self.constant(self.get_variable_displacement(self.arg_no)),
             temp,
         )
         self.pb_insert(self.pb_index, OPCode.ASSIGN, arg, self.indirect(temp))
 
         self.arg_no = self.arg_no + 1
+
+    def init_return_val(self, lookahead):
+        temp = self.get_temp_var()
+        scope = self.symbol_table.current_scope.number
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope),
+            self.constant(self._RETURN_VALUE_DISPLACEMENT),
+            temp,
+        )
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.indirect(temp))
 
     def save_return_val(self, lookahead):
         temp = self.get_temp_var()
@@ -404,14 +425,14 @@ class CodeGen:
     def insert_main_call(self):
         scope = self.get_function_scope("main")
 
-        ar_temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
+        # ar_temp = self.get_temp_var()
+        # self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
-        cmp_temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)
-        self.pb_insert(self.pb_index, OPCode.JUMP_IF, cmp_temp, self.pb_index + 2)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
+        # cmp_temp = self.get_temp_var()
+        # self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)
+        # self.pb_insert(self.pb_index, OPCode.JUMP_IF, cmp_temp, self.pb_index + 2)
+        # self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
 
         temp = self.get_temp_var()
         self.pb_insert(

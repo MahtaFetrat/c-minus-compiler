@@ -6,7 +6,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 4. Declaration-initial -> #declare_type Type-specifier #declare_ID ID
 5. Declaration-prime -> #declare_func #add_scope #save Fun-declaration-prime #release_scope #skip | Var-declaration-prime
 6. Var-declaration-prime -> #declare_var ; | #declare_array [ #cell_no NUM ] ;
-7. Fun-declaration-prime -> ( Params ) #save #set_call_address Compound-stmt #set_runtime_stack_top #return_jp
+7. Fun-declaration-prime -> ( Params ) #save #set_call_address #init_return_val Compound-stmt #set_runtime_stack_top #return_jp
 8. Type-specifier -> int | void
 9. Params -> #declare #arg_count #declare_type int #declare_ID ID Param-prime Param-list | void
 10. Param-list -> , Param Param-list | EPSILON
@@ -38,9 +38,9 @@ GRAMMAR = """1. Program -> Declaration-list $
 36. Term-zegond -> Factor-zegond G
 37. G -> * Factor #mult G | EPSILON
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
-39. Var-call-prime -> #update_displays #reset_arg_no ( Args ) #func_call #get_return_val | Var-prime
+39. Var-call-prime -> #pruntime_stack_top #reset_arg_no ( Args ) #update_displays #func_call #get_return_val | Var-prime
 40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #update_displays #reset_arg_no ( Args ) #func_call #get_return_val | EPSILON
+41. Factor-prime -> #pruntime_stack_top #reset_arg_no ( Args ) #update_displays #func_call #get_return_val | EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #set_arg Arg-list-prime
