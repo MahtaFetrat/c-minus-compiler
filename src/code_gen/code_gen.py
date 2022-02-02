@@ -209,11 +209,12 @@ class CodeGen:
         self.ss_push(self.pb_index)
 
     def repeat(self, lookahead):
-        self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index + 2)
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
+        condition = self.ss_pop()
+        label = self.ss_pop()
+        self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, condition, label)
 
     def break_assign(self, lookahead):
-        self.pb_insert(self.ss_pop(), OPCode.ASSIGN, self.pb_index, self.cs_pop())
+        self.pb_insert(self.ss_pop(), OPCode.ASSIGN, self.constant(self.pb_index), self.cs_pop())
 
     def relop(self, lookahead):
         self.ss_push("LT" if lookahead == "<" else "EQ")
@@ -382,7 +383,7 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.JUMP, scope.call_address)
 
     def get_indirect_value(self, lookahead):
-        ss_top = self.ss_pop()
+        ss_top = self.ss_peek()
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(ss_top), ss_top)
 
     def set_arg(self, lookahead):

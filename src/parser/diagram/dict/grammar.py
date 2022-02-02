@@ -19,7 +19,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 17. Selection-stmt -> if ( Expression ) #save Statement Else-stmt
 18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
 19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat #break_assign
-20. Return-stmt -> return Return-stmt-prime
+20. Return-stmt -> return Return-stmt-prime #return_jp
 21. Return-stmt-prime -> ; | Expression #save_return_val ;
 22. Expression -> Simple-expression-zegond | #pid ID B
 23. B -> #assign_id = Expression #assign | #assign_id [ Expression #displace ] H | #apply_id Simple-expression-prime

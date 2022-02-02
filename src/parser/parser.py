@@ -59,6 +59,6 @@ class Parser:
 
 if __name__ == '__main__':
     p = Parser('D:/university/term5/Compiler Design/project/c-minus-compiler'
-               '/test/code_gen/test_files/T3/input.txt'
+               '/test/code_gen/test_files/T8/input.txt'
                )
     p.parse()
