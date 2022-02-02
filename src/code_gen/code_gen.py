@@ -56,6 +56,7 @@ class CodeGen:
             "#skip": self.skip,
             "#set-call-address": self.set_call_address,
             "#set-runtime-stack-top": self.set_runtime_stack_top,
+            "#retrieve-display": self.retrieve_display,
             "#return-jp": self.return_jp,
             "#arg-count": self.arg_count,
             "#stmt-flag": self.stmt_flag,
@@ -193,10 +194,10 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def jpf(self, lookahead):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), self.pb_index)
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index)
 
     def jpf_save(self, lookahead):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_IF, self.ss_pop(), self.pb_index + 1)
+        self.pb_insert(self.ss_pop(), OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index + 1)
         self.ss_push(self.pb_index)
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
@@ -208,7 +209,7 @@ class CodeGen:
         self.ss_push(self.pb_index)
 
     def repeat(self, lookahead):
-        self.pb_insert(self.pb_index, OPCode.JUMP_IF, self.ss_pop(), self.pb_index + 2)
+        self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index + 2)
         self.pb_insert(self.pb_index, OPCode.JUMP, self.ss_pop())
 
     def break_assign(self, lookahead):
@@ -267,6 +268,26 @@ class CodeGen:
             self._RUNTIME_STACK_TOP,
             self.constant(displacement),
             self._RUNTIME_STACK_TOP,
+        )
+
+    def retrieve_display(self, lookahead):
+        return_value = self.ss_pop()
+        scope = self.get_function_scope(self.ss_pop())
+        self.ss_push(return_value)
+
+        temp = self.get_temp_var()
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ASSIGN,
+            self.get_display_address(scope.number),
+            temp
+        )
+
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ASSIGN,
+            self.indirect(temp),
+            self.get_display_address(scope.number),
         )
 
     def return_jp(self, lookahead):
@@ -339,8 +360,8 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
         cmp_temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)
-        self.pb_insert(self.pb_index, OPCode.JUMP_IF, cmp_temp, self.pb_index + 2)
+        self.pb_insert(self.pb_index, OPCode.LESS, self.constant(0), ar_temp, cmp_temp)
+        self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, cmp_temp, self.pb_index + 2)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
 
     def reset_arg_no(self, lookahead):
@@ -404,7 +425,7 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.indirect(temp))
 
     def get_return_val(self, lookahead):
-        scope = self.get_function_scope(self.ss_pop())
+        scope = self.get_function_scope(self.ss_peek())
 
         temp = self.get_temp_var()
         self.pb_insert(
@@ -424,15 +445,7 @@ class CodeGen:
 
     def insert_main_call(self):
         scope = self.get_function_scope("main")
-
-        # ar_temp = self.get_temp_var()
-        # self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
-
-        # cmp_temp = self.get_temp_var()
-        # self.pb_insert(self.pb_index, OPCode.LESS, ar_temp, self.constant(0), cmp_temp)
-        # self.pb_insert(self.pb_index, OPCode.JUMP_IF, cmp_temp, self.pb_index + 2)
-        # self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
 
         temp = self.get_temp_var()
         self.pb_insert(

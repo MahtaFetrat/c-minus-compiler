@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from src.code_gen.code_gen import CodeGen
 
 from src.parser.diagram.builder import Builder
@@ -32,6 +34,7 @@ class Parser:
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
         self._write_parse_tree(tree)
         self.close()
+        print(tree)
 
     @staticmethod
     def _write_parse_tree(tree: Tree):
@@ -54,5 +57,8 @@ class Parser:
         self._error_out_file.close()
 
 
-parser = Parser(f"/home/matt/PycharmProjects/compiler/test/code_gen/test_files/T1/input.txt")
-parser.parse()
+if __name__ == '__main__':
+    p = Parser('D:/university/term5/Compiler Design/project/c-minus-compiler'
+               '/test/code_gen/test_files/T3/input.txt'
+               )
+    p.parse()

@@ -9,7 +9,7 @@ class OPCode(Enum):
     EQUAL = "EQ"
     LESS = "LT"
     ASSIGN = "ASSIGN"
-    JUMP_IF = "JPF"
+    JUMP_FALSE = "JPF"
     JUMP = "JP"
     PRINT = "PRINT"
 
