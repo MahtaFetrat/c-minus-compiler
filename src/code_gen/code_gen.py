@@ -97,6 +97,9 @@ class CodeGen:
     def get_variable_displacement(cls, index):
         return cls._VARIABLES_DISPLACEMENT + cls._WORD_SIZE * index
 
+    def get_data_address(self, index):
+        return self._DATA_ADDRESS + self._WORD_SIZE * index
+
     def get_temp_var(self):
         self.assembler.move_temp_pointer(self._WORD_SIZE)
         return self.assembler.temp_address - self._WORD_SIZE
@@ -322,13 +325,18 @@ class CodeGen:
             self.ss_push(_id)
             return
 
-        scope, index = self.symbol_table.get_address(_id)
+        scope, index = self.get_address(_id)
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
-
-        if var != IDItem.IDVar.ARRAY:
-            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
+        if scope != 0:
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
+            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
+            if var != IDItem.IDVar.ARRAY:
+                self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
+        else:
+            if var != IDItem.IDVar.ARRAY:
+                self.pb_insert(self.pb_index, OPCode.ASSIGN, index, temp)
+            else:
+                self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(index), temp)
 
         self.ss_push(temp)
 
@@ -340,10 +348,13 @@ class CodeGen:
             self.ss_push(_id)
             return
 
-        scope, index = self.symbol_table.get_address(_id)
+        scope, index = self.get_address(_id)
         temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
+        if scope != 0:
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
+            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
+        else:
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(index), temp)
 
         self.ss_push(temp)
 
@@ -443,6 +454,12 @@ class CodeGen:
         if function_name in self.scopes:
             return self.scopes[function_name]
         return self.symbol_table.get_function_scope(function_name)
+
+    def get_address(self, _id):
+        scope, index = self.symbol_table.get_address(_id)
+        if scope == 0:
+            return 0, self.get_data_address(index)
+        return scope, index
 
     def insert_main_call(self):
         scope = self.get_function_scope("main")
