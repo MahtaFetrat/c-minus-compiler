@@ -18,7 +18,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 16. Expression-stmt -> #stmt_flag Expression #pop_stmt_flag ; | break #break_jp ; | ;
 17. Selection-stmt -> if ( Expression ) #save Statement Else-stmt
 18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
-19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat #break_assign
+19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat_jp #break_assign
 20. Return-stmt -> return Return-stmt-prime #return_jp
 21. Return-stmt-prime -> ; | Expression #save_return_val ;
 22. Expression -> Simple-expression-zegond | #pid ID B

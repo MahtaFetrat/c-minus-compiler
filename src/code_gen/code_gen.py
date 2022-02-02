@@ -42,14 +42,13 @@ class CodeGen:
             "#assign": self.assign,
             "#displace": self.displace,
             "#save": self.save,
-            "#pop": self.pop,
             "#jp": self.jp,
             "#break-jp": self.break_jp,
             "#jpf": self.jpf,
             "#jpf-save": self.jpf_save,
             "#break-label": self.break_label,
             "#label": self.label,
-            "#repeat": self.repeat,
+            "#repeat-jp": self.repeat_jp,
             "#break-assign": self.break_assign,
             "#relop": self.relop,
             "#cmp": self.cmp,
@@ -127,8 +126,11 @@ class CodeGen:
 
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
-        print(semantic_action, end='')
-        print(self.semantic_stack)
+        print(self.pb_index, end=". ")
+        print(self.symbol_table.current_scope.name, end="|")
+        print(semantic_action, end=': ')
+        print(self.semantic_stack, end=" ")
+        print(self.control_stack)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
@@ -186,9 +188,6 @@ class CodeGen:
         self.ss_push(self.pb_index)
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
-    def pop(self, lookahead):
-        self.ss_pop()
-
     def jp(self, lookahead):
         self.pb_insert(self.ss_pop(), OPCode.JUMP, self.pb_index)
 
@@ -197,10 +196,14 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def jpf(self, lookahead):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index)
+        index = self.ss_pop()
+        condition = self.ss_pop()
+        self.pb_insert(index, OPCode.JUMP_FALSE, condition, self.pb_index)
 
     def jpf_save(self, lookahead):
-        self.pb_insert(self.ss_pop(), OPCode.JUMP_FALSE, self.ss_pop(), self.pb_index + 1)
+        index = self.ss_pop()
+        condition = self.ss_pop()
+        self.pb_insert(index, OPCode.JUMP_FALSE, condition, self.pb_index + 1)
         self.ss_push(self.pb_index)
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
@@ -211,7 +214,7 @@ class CodeGen:
     def label(self, lookahead):
         self.ss_push(self.pb_index)
 
-    def repeat(self, lookahead):
+    def repeat_jp(self, lookahead):
         condition = self.ss_pop()
         label = self.ss_pop()
         self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, condition, label)
