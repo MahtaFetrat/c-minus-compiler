@@ -65,15 +65,14 @@ class CodeGen:
             "#addop": self.addop,
             "#add": self.add,
             "#mult": self.mult,
-            "#pruntime-stack-top": self.pruntime_stack_top,
             "#update-displays": self.update_displays,
+            "#set-args": self.set_args,
             "#initialize-arg-count": self.initialize_arg_count,
             "#func-call": self.func_call,
-            "#set-arg": self.set_arg,
+            "#increment-arg-no": self.increment_arg_no,
             "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
-            "#get-return-val": self.get_return_val,
-            "#pop-args-count": self.pop_args_count
+            "#get-return-val": self.get_return_val
         }
 
     @property
@@ -106,8 +105,8 @@ class CodeGen:
     def ss_pop(self):
         return self.semantic_stack.pop()
 
-    def ss_peek(self):
-        return self.semantic_stack[-1]
+    def ss_peek(self, index=1):
+        return self.semantic_stack[-index]
 
     def cs_pop(self):
         return self.control_stack.pop()
@@ -117,6 +116,12 @@ class CodeGen:
 
     def ss_push(self, item):
         self.semantic_stack.append(item)
+
+    def arg_counts_pop(self):
+        return self.arg_counts.pop()
+
+    def arg_counts_peek(self, index=1):
+        return self.arg_counts[-index]
 
     def pb_insert(self, index, opcode, *args):
         self.assembler.add_instruction(index, opcode, *args)
@@ -130,7 +135,8 @@ class CodeGen:
         print(self.symbol_table.current_scope.name, end="|")
         print(semantic_action, end=': ')
         print(self.semantic_stack, end=" ")
-        print(self.control_stack)
+        print(self.control_stack, end=' ')
+        print(self.arg_counts)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
@@ -371,15 +377,9 @@ class CodeGen:
 
         self.ss_push(temp)
 
-    def pruntime_stack_top(self, lookahead):
-        temp = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, temp)
-        self.ss_push(temp)
-
     def update_displays(self, lookahead):
-        self.ss_pop()
-        scope = self.get_function_scope(self.ss_peek())
-
+        arg_count = self.arg_counts_peek()
+        scope = self.get_function_scope(self.ss_peek(arg_count + 1))
         ar_temp = self.get_temp_var()
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
@@ -410,22 +410,21 @@ class CodeGen:
         ss_top = self.ss_peek()
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(ss_top), ss_top)
 
-    def pop_args_count(self, lookahead):
-        self.arg_counts.pop()
-
-    def set_arg(self, lookahead):
-        arg = self.ss_pop()
-
+    def set_args(self, lookahead):
+        arg_count = self.arg_counts_pop()
+        scope = self.get_function_scope(self.ss_peek(arg_count + 1))
         temp = self.get_temp_var()
-        self.pb_insert(
-            self.pb_index,
-            OPCode.ADD,
-            self.ss_peek(),
-            self.constant(self.get_variable_displacement(self.arg_counts[-1])),
-            temp,
-        )
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, arg, self.indirect(temp))
+        for arg_no in range(arg_count, 0, -1):
+            self.pb_insert(
+                self.pb_index,
+                OPCode.ADD,
+                self.get_display_address(scope.number),
+                self.constant(self.get_variable_displacement(arg_no - 1)),
+                temp
+            )
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, self.ss_pop(), self.indirect(temp))
 
+    def increment_arg_no(self, lookahead):
         self.arg_counts[-1] = self.arg_counts[-1] + 1
 
     def init_return_val(self, lookahead):
