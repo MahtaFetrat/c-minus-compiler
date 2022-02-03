@@ -73,7 +73,8 @@ class CodeGen:
             "#increment-arg-no": self.increment_arg_no,
             "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
-            "#get-return-val": self.get_return_val
+            "#get-return-val": self.get_return_val,
+            "#pruntime-top": self.pruntime_top
         }
 
     @property
@@ -118,10 +119,10 @@ class CodeGen:
         self.symbol_table.increment_temp_variables_count()
         return self.runtime_temp(temp)
 
-    def convert_runtime_temp(self, item, scope, pb_index):
+    def convert_runtime_temp(self, item, scope, pb_index, display_address=None):
         if str(item).startswith("^"):
             temp = self.get_temp_var()
-            self.pb_insert(pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), temp)
+            self.pb_insert(pb_index, OPCode.ASSIGN, display_address if display_address else self.get_display_address(scope.number), temp)
             self.pb_insert(pb_index + 1, OPCode.ADD, self.constant(self.get_temp_variable_displacement(scope, int(str(item)[1:]))), temp, temp)
             return self.indirect(temp, pb_index)
         return None
@@ -147,6 +148,9 @@ class CodeGen:
 
     def arg_counts_pop(self):
         return self.arg_counts.pop()
+
+    def arg_counts_peek(self):
+        return self.arg_counts[-1]
 
     def pb_insert(self, index, opcode, *args):
         self.assembler.add_instruction(index, opcode, *args)
@@ -336,18 +340,18 @@ class CodeGen:
         scope = self.get_function_scope(self.ss_pop(self.pb_index))
         self.ss_push(return_value)
 
-        temp = self.get_temp_var()
+        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
         self.pb_insert(
             self.pb_index,
             OPCode.ASSIGN,
             self.get_display_address(scope.number),
             temp
         )
-
+        temp_indirect = self.indirect(temp, self.pb_index)
         self.pb_insert(
             self.pb_index,
             OPCode.ASSIGN,
-            self.indirect(temp, self.pb_index),
+            temp_indirect,
             self.get_display_address(scope.number),
         )
 
@@ -432,12 +436,14 @@ class CodeGen:
         self.ss_push(runtime_temp)
 
     def update_displays(self, lookahead):
-        scope = self.get_function_scope(self.ss_peek(self.pb_index))
-        ar_temp = self.get_temp_var()
+        arg_count = self.arg_counts_peek()
+        scope = self.get_function_scope(self.ss_peek(self.pb_index, arg_count + 2))
+
+        ar_temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
-        cmp_temp = self.get_temp_var()
+        cmp_temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
         self.pb_insert(self.pb_index, OPCode.LESS, self.constant(0), ar_temp, cmp_temp)
         self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, cmp_temp, self.pb_index + 2)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP, self.pb_index))
@@ -465,52 +471,36 @@ class CodeGen:
         op = self.indirect(ss_top, self.pb_index)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, op, ss_top)
 
+    def pruntime_top(self, lookahead):
+        temp = self.get_temp_var()
+        scope = self.symbol_table.current_scope
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), temp)
+        self.ss_push(temp)
+
     def set_args(self, lookahead):
         arg_count = self.arg_counts_pop()
-        temp = self.get_temp_var()
+        scope = self.get_function_scope(self.ss_peek(self.pb_index, arg_count + 2))
+        display_address = self.ss_peek(self.pb_index, arg_count + 1)
+        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index, display_address)
         for arg_no in range(arg_count, 0, -1):
             self.pb_insert(
                 self.pb_index,
                 OPCode.ADD,
-                self._RUNTIME_STACK_TOP,
+                self.get_display_address(scope.number),
                 self.constant(self.get_local_variable_displacement(arg_no - 1)),
                 temp
             )
             op = self.ss_pop(self.pb_index)
-            self.pb_insert(self.pb_index, OPCode.ASSIGN, op, self.indirect(temp, self.pb_index))
+            temp_indirect = self.indirect(temp, self.pb_index)
+            self.pb_insert(self.pb_index, OPCode.ASSIGN, op, temp_indirect)
+        self.semantic_stack.pop()
 
     def increment_arg_no(self, lookahead):
         self.arg_counts[-1] = self.arg_counts[-1] + 1
 
     def init_return_val(self, lookahead):
-        temp = self.get_temp_var()
-        scope = self.symbol_table.current_scope.number
-        self.pb_insert(
-            self.pb_index,
-            OPCode.ADD,
-            self.get_display_address(scope),
-            self.constant(self._RETURN_VALUE_DISPLACEMENT),
-            temp,
-        )
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.indirect(temp, self.pb_index))
-
-    def save_return_val(self, lookahead):
-        temp = self.get_temp_var()
-        scope = self.symbol_table.current_scope.number
-        self.pb_insert(
-            self.pb_index,
-            OPCode.ADD,
-            self.get_display_address(scope),
-            self.constant(self._RETURN_VALUE_DISPLACEMENT),
-            temp,
-        )
-        op = self.ss_pop(self.pb_index)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, op, self.indirect(temp, self.pb_index))
-
-    def get_return_val(self, lookahead):
-        scope = self.get_function_scope(self.ss_peek(self.pb_index))
-
-        temp = self.get_temp_var()
+        scope = self.symbol_table.current_scope
+        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), scope, self.pb_index)
         self.pb_insert(
             self.pb_index,
             OPCode.ADD,
@@ -518,8 +508,38 @@ class CodeGen:
             self.constant(self._RETURN_VALUE_DISPLACEMENT),
             temp,
         )
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp, self.pb_index), temp)
-        self.ss_push(temp)
+        temp_indirect = self.indirect(temp, self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), temp_indirect)
+
+    def save_return_val(self, lookahead):
+        scope = self.symbol_table.current_scope
+        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), scope, self.pb_index)
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope.number),
+            self.constant(self._RETURN_VALUE_DISPLACEMENT),
+            temp,
+        )
+        op = self.ss_pop(self.pb_index)
+        temp_indirect = self.indirect(temp, self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, op, temp_indirect)
+
+    def get_return_val(self, lookahead):
+        scope = self.get_function_scope(self.ss_peek(self.pb_index))
+
+        runtime_temp = self.get_runtime_temp_var()
+        temp = self.convert_runtime_temp(runtime_temp, self.symbol_table.current_scope, self.pb_index)
+        self.pb_insert(
+            self.pb_index,
+            OPCode.ADD,
+            self.get_display_address(scope.number),
+            self.constant(self._RETURN_VALUE_DISPLACEMENT),
+            temp,
+        )
+        temp_indirect = self.indirect(temp, self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, temp_indirect, temp)
+        self.ss_push(runtime_temp)
 
     def get_function_scope(self, function_name):
         if function_name in self.scopes:
@@ -536,6 +556,7 @@ class CodeGen:
         return scope.variable_size(self._WORD_SIZE) + self._VARIABLES_DISPLACEMENT
 
     def insert_main_call(self):
+        print("here")
         scope = self.get_function_scope("main")
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
@@ -547,7 +568,8 @@ class CodeGen:
             self.constant(self._RETURN_ADDRESS_DISPLACEMENT),
             temp,
         )
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(self.pb_index + 2), self.indirect(temp, self.pb_index))
+        temp_indirect = self.indirect(temp, self.pb_index)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(self.pb_index + 2), temp_indirect)
         self.pb_insert(self.pb_index, OPCode.JUMP, scope.call_address)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
 
