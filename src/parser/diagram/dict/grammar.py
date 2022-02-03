@@ -38,9 +38,9 @@ GRAMMAR = """1. Program -> Declaration-list $
 36. Term-zegond -> Factor-zegond G
 37. G -> * Factor #mult G | EPSILON
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
-39. Var-call-prime -> #pruntime_stack_top #reset_arg_no ( Args ) #update_displays #func_call #get_return_val #retrieve_display | Var-prime
+39. Var-call-prime -> #pruntime_stack_top #initialize_arg_count ( Args #pop_args_count ) #update_displays #func_call #get_return_val #retrieve_display | Var-prime
 40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #pruntime_stack_top #reset_arg_no ( Args ) #update_displays #func_call #get_return_val #retrieve_display | EPSILON
+41. Factor-prime -> #pruntime_stack_top #initialize_arg_count ( Args #pop_args_count ) #update_displays #func_call #get_return_val #retrieve_display | EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #set_arg Arg-list-prime

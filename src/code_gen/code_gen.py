@@ -19,13 +19,13 @@ class CodeGen:
 
     def __init__(self):
         self.lookahead = None
-        self.symbol_table = SymbolTable()
+        self.symbol_table = SymbolTable(self._WORD_SIZE)
         self.scopes = {"output": self.symbol_table.get_output_func_scope()}
         self.scope_numbers = {0, 1}
         self.semantic_stack = []
         self.control_stack = []
         self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS, self._RUNTIME_STACK_TOP)
-        self.arg_no = 0
+        self.arg_counts = []
         self.routines: Dict[str, Any] = {
             "#declare": self.declare,
             "#declare-ID": self.declare_id,
@@ -34,7 +34,6 @@ class CodeGen:
             "#declare-array": self.declare_array,
             "#declare-func": self.declare_func,
             "#cell-no": self.cell_no,
-            "#arg-no": self.arg_no,
             "#add-scope": self.add_scope,
             "#release-scope": self.release_scope,
             "#pid": self.pid,
@@ -68,12 +67,13 @@ class CodeGen:
             "#mult": self.mult,
             "#pruntime-stack-top": self.pruntime_stack_top,
             "#update-displays": self.update_displays,
-            "#reset-arg-no": self.reset_arg_no,
+            "#initialize-arg-count": self.initialize_arg_count,
             "#func-call": self.func_call,
             "#set-arg": self.set_arg,
             "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
-            "#get-return-val": self.get_return_val
+            "#get-return-val": self.get_return_val,
+            "#pop-args-count": self.pop_args_count
         }
 
     @property
@@ -182,6 +182,7 @@ class CodeGen:
 
     def displace(self, lookahead):
         displacement = self.ss_pop()
+        self.pb_insert(self.pb_index, OPCode.MULT, displacement, self.constant(4), displacement)
         self.pb_insert(self.pb_index, OPCode.ADD, displacement, self.ss_peek(), self.ss_peek())
 
     def save(self, lookahead):
@@ -261,7 +262,7 @@ class CodeGen:
         self.symbol_table.set_call_address(self.pb_index - 1)
 
     def set_runtime_stack_top(self, lookahead):
-        displacement = self._WORD_SIZE * self.symbol_table.current_scope_size + self._VARIABLES_DISPLACEMENT
+        displacement = self.get_runtime_mem_size(self.symbol_table.current_scope)
         self.pb_insert(
             self.ss_pop(),
             OPCode.ADD,
@@ -329,10 +330,15 @@ class CodeGen:
             return
 
         scope, index = self.get_address(_id)
+        args_count = scope.args_count
+        scope = scope.number
         temp = self.get_temp_var()
         if scope != 0:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
             self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
+
+            if var == IDItem.IDVar.ARRAY and index < args_count:
+                self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
             if var != IDItem.IDVar.ARRAY:
                 self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
         else:
@@ -352,10 +358,14 @@ class CodeGen:
             return
 
         scope, index = self.get_address(_id)
+        args_count = scope.args_count
+        scope = scope.number
         temp = self.get_temp_var()
         if scope != 0:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
             self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_variable_displacement(index)), temp)
+            if var == IDItem.IDVar.ARRAY and index < args_count:
+                self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp), temp)
         else:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(index), temp)
 
@@ -379,8 +389,8 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, cmp_temp, self.pb_index + 2)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP))
 
-    def reset_arg_no(self, lookahead):
-        self.arg_no = 0
+    def initialize_arg_count(self, lookahead):
+        self.arg_counts.append(0)
 
     def func_call(self, lookahead):
         scope = self.get_function_scope(self.ss_peek())
@@ -400,6 +410,9 @@ class CodeGen:
         ss_top = self.ss_peek()
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(ss_top), ss_top)
 
+    def pop_args_count(self, lookahead):
+        self.arg_counts.pop()
+
     def set_arg(self, lookahead):
         arg = self.ss_pop()
 
@@ -408,12 +421,12 @@ class CodeGen:
             self.pb_index,
             OPCode.ADD,
             self.ss_peek(),
-            self.constant(self.get_variable_displacement(self.arg_no)),
+            self.constant(self.get_variable_displacement(self.arg_counts[-1])),
             temp,
         )
         self.pb_insert(self.pb_index, OPCode.ASSIGN, arg, self.indirect(temp))
 
-        self.arg_no = self.arg_no + 1
+        self.arg_counts[-1] = self.arg_counts[-1] + 1
 
     def init_return_val(self, lookahead):
         temp = self.get_temp_var()
@@ -460,9 +473,12 @@ class CodeGen:
 
     def get_address(self, _id):
         scope, index = self.symbol_table.get_address(_id)
-        if scope == 0:
-            return 0, self.get_data_address(index)
+        if scope.number == 0:
+            return scope, self.get_data_address(index)
         return scope, index
+
+    def get_runtime_mem_size(self, scope):
+        return scope.size(self._WORD_SIZE) + self._VARIABLES_DISPLACEMENT
 
     def insert_main_call(self):
         scope = self.get_function_scope("main")

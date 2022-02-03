@@ -39,10 +39,9 @@ class Scope:
     def last_item(self):
         return self.id_items[-1]
 
-    @property
-    def size(self):
+    def size(self, word_size):
         return sum(
-            id_item.cell_no
+            id_item.cell_no * word_size
             for id_item in filter(
                 lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items
             )
@@ -56,10 +55,12 @@ class Scope:
             return self.parent.get_item(lookahead)
         return None
 
-    def get_address(self, lookahead) -> Union[Tuple[int, int], None]:
-        for index, item in enumerate(self.id_items):
+    def get_address(self, lookahead) -> Union[Tuple, None]:
+        index = 0
+        for item in self.id_items:
             if item.id == lookahead:
-                return self.number, index
+                return self, index
+            index += item.cell_no
         if self.parent:
             return self.parent.get_address(lookahead)
         return None
@@ -105,7 +106,8 @@ class Scope:
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
 
-    def __init__(self):
+    def __init__(self, word_size):
+        self.word_size = word_size
         self.global_scope = Scope(0)
         self.global_scope.add_symbol()
         self.global_scope.set_id("output")
@@ -128,7 +130,7 @@ class SymbolTable:
 
     @property
     def current_scope_size(self):
-        return self.current_scope.size
+        return self.current_scope.size(self.word_size)
 
     def add_scope(self):
         self.stack.append(
