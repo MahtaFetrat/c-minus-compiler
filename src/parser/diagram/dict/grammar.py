@@ -44,7 +44,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #increment_arg_no Arg-list-prime
-45. Arg-list-prime -> , Expression #set_arg Arg-list-prime | EPSILON"""
+45. Arg-list-prime -> , Expression #increment_arg_no Arg-list-prime | EPSILON"""
 
 
 def sub_illegal_characters(rule, dollar_sign, epsilon):

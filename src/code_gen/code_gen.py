@@ -188,8 +188,9 @@ class CodeGen:
 
     def displace(self, lookahead):
         displacement = self.ss_pop()
-        self.pb_insert(self.pb_index, OPCode.MULT, displacement, self.constant(4), displacement)
-        self.pb_insert(self.pb_index, OPCode.ADD, displacement, self.ss_peek(), self.ss_peek())
+        temp = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.MULT, displacement, self.constant(4), temp)
+        self.pb_insert(self.pb_index, OPCode.ADD, temp, self.ss_peek(), self.ss_peek())
 
     def save(self, lookahead):
         self.ss_push(self.pb_index)
