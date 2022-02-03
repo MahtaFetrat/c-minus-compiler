@@ -127,14 +127,14 @@ class CodeGen:
             return self.indirect(temp, pb_index)
         return None
 
-    def ss_pop(self, pb_index):
+    def ss_pop(self, pb_index, display_address=None):
         item = self.semantic_stack.pop()
-        runtime_temp = self.convert_runtime_temp(item, self.symbol_table.current_scope, pb_index)
+        runtime_temp = self.convert_runtime_temp(item, self.symbol_table.current_scope, pb_index, display_address)
         return runtime_temp if runtime_temp else item
 
-    def ss_peek(self, pb_index, index=1):
+    def ss_peek(self, pb_index, index=1, display_address=None):
         item = self.semantic_stack[-index]
-        runtime_temp = self.convert_runtime_temp(item, self.symbol_table.current_scope, pb_index)
+        runtime_temp = self.convert_runtime_temp(item, self.symbol_table.current_scope, pb_index, display_address)
         return runtime_temp if runtime_temp else item
 
     def cs_pop(self):
@@ -479,9 +479,9 @@ class CodeGen:
 
     def set_args(self, lookahead):
         arg_count = self.arg_counts_pop()
-        scope = self.get_function_scope(self.ss_peek(self.pb_index, arg_count + 2))
-        display_address = self.ss_peek(self.pb_index, arg_count + 1)
-        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index, display_address)
+        display_address = self.ss_pop(self.pb_index)
+        scope = self.get_function_scope(self.ss_peek(self.pb_index, arg_count + 1))
+        temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
         for arg_no in range(arg_count, 0, -1):
             self.pb_insert(
                 self.pb_index,
@@ -490,10 +490,9 @@ class CodeGen:
                 self.constant(self.get_local_variable_displacement(arg_no - 1)),
                 temp
             )
-            op = self.ss_pop(self.pb_index)
+            op = self.ss_pop(self.pb_index, display_address)
             temp_indirect = self.indirect(temp, self.pb_index)
             self.pb_insert(self.pb_index, OPCode.ASSIGN, op, temp_indirect)
-        self.semantic_stack.pop()
 
     def increment_arg_no(self, lookahead):
         self.arg_counts[-1] = self.arg_counts[-1] + 1
