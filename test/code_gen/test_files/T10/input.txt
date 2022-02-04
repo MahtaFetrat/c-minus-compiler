@@ -55,6 +55,9 @@ int integerDivision(int a, int b) {
     int i;
     int step;
     int flag;
+    int f1;
+    int f2;
+	int tmp;
 
     if (b == 0) {
         return 123456789;
@@ -88,14 +91,11 @@ int integerDivision(int a, int b) {
         if (i * b == a) {
             return i;
         } else {
-            int f1;
-            int f2;
-	    int tmp;
             f1 = i * b < a;
-	    tmp = i + step;
+	        tmp = i + step;
             f2 = a < tmp * b;
             if (f1 == f2) {
-		tmp = b == abs(b);
+		        tmp = b == abs(b);
                 return (i + tmp - 1);
             } else {
                 i = i + step;
