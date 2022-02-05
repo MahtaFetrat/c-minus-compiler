@@ -104,6 +104,14 @@ class Scope:
             return self.parent.get_id_var(_id)
         return None
 
+    def get_id_item(self, _id):
+        for index, item in enumerate(self.id_items):
+            if item.id == _id:
+                return item
+        if self.parent:
+            return self.parent.get_id_item(_id)
+        return None
+
     def get_function_scope(self, function_name):
         if self.name == function_name:
             return self
@@ -174,6 +182,9 @@ class SymbolTable:
 
     def get_id_var(self, _id):
         return self.current_scope.get_id_var(_id)
+
+    def get_id_item(self, _id):
+        return self.current_scope.get_id_item(_id)
 
     def get_address(self, _id):
         return self.current_scope.get_address(_id)

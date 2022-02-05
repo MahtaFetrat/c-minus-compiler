@@ -183,6 +183,7 @@ class CodeGen:
         self.ss_push(lookahead)
 
     def pnum(self, lookahead):
+        self.type_stack.append(IDItem.IDType.INT)
         self.ss_push(self.constant(lookahead))
 
     def assign(self, lookahead):
@@ -241,6 +242,14 @@ class CodeGen:
         second_operand = self.ss_pop()
         operator = self.ss_pop()
         first_operand = self.ss_pop()
+
+        second_id_item = self.type_stack.pop()
+        first_id_item = self.type_stack.pop()
+
+        # if bool(second_id_item.element_type == first_id_item.element_type
+        #         and second_id_item.var == first_id_item.var == first_id_item)
+
+
         temp = self.get_temp_var()
         self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
         self.ss_push(temp)
@@ -335,6 +344,8 @@ class CodeGen:
     def apply_id(self, lookahead):
         _id = self.ss_pop()
         var = self.symbol_table.get_id_var(_id)
+        # id_item = self.symbol_table.get_id_item(_id)
+        # self.type_stack.append(id_item.element_type)
 
         if var == IDItem.IDVar.FUNCTION:
             self.ss_push(_id)
@@ -419,6 +430,13 @@ class CodeGen:
         arg_count = self.arg_counts_pop()
         scope = self.get_function_scope(self.ss_peek(arg_count + 1))
         temp = self.get_temp_var()
+
+        if scope.args_count != arg_count:
+            raise ParameterNumber(
+                lookahead=lookahead,
+                arg_no=arg_count
+            )
+
         for arg_no in range(arg_count, 0, -1):
             self.pb_insert(
                 self.pb_index,

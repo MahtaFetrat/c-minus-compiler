@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from src.code_gen.code_gen import CodeGen
 
 from src.parser.diagram.builder import Builder
@@ -65,3 +63,9 @@ class Parser:
         with open("semantic_errors.txt", "w") as f:
             f.write("The input program is semantically correct")
         self._error_out_file.close()
+
+
+if __name__ == '__main__':
+    parser = Parser('D:/university/term5/Compiler Design/project/'
+                    'c-minus-compiler/test/code_gen/test_files/S3/input.txt')
+    parser.parse()
