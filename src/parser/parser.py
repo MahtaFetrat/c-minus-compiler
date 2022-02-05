@@ -37,7 +37,6 @@ class Parser:
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
         self._write_parse_tree(tree)
         self.close()
-        print(tree)
 
     @staticmethod
     def _write_parse_tree(tree: Tree):
@@ -63,11 +62,6 @@ class Parser:
         self.code_gen.close(self._semantic_error_encountered)
         if not self._syntax_error_encountered:
             self._error_out_file.write("There is no syntax error.")
+        with open("semantic_errors.txt", "w") as f:
+            f.write("The input program is semantically correct")
         self._error_out_file.close()
-
-
-if __name__ == '__main__':
-    p = Parser('D:/university/term5/Compiler Design/project/c-minus-compiler'
-               '/test/code_gen/test_files/T8/input.txt'
-               )
-    p.parse()

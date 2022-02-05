@@ -11,7 +11,7 @@ class CodeGen:
     _DATA_ADDRESS = 100
     _RUNTIME_STACK_TOP = 500
     _STACK_ADDRESS = _RUNTIME_STACK_TOP + 11 * _WORD_SIZE
-    _TEMP_ADDRESS = 3012
+    _TEMP_ADDRESS = 1000012
 
     _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
     _RETURN_ADDRESS_DISPLACEMENT = 1 * _WORD_SIZE
@@ -141,12 +141,6 @@ class CodeGen:
     def call(self, semantic_action, lookahead, line_no=None):
         self.line_no = line_no
         self.lookahead = lookahead[1]
-        print(self.pb_index, end=". ")
-        print(self.symbol_table.current_scope.name, end="|")
-        print(semantic_action, end=': ')
-        print(self.semantic_stack, end=" ")
-        print(self.control_stack, end=' ')
-        print(self.arg_counts)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):

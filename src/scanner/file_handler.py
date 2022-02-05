@@ -74,6 +74,7 @@ class FileHandler:
             self._buffer = self._buffer + "\n"
         self._buffer_iterator = Iterator(self._buffer)
         self._line_number += 1
+        print(self._line_number, end='')
 
     def _update_lexeme(self, char):
         """Update the lexeme with the given character."""
