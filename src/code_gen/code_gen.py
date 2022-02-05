@@ -2,6 +2,7 @@ from typing import Dict, Any
 
 from src.code_gen.assembler import Assembler, OPCode
 from src.code_gen.symbol_table import SymbolTable, IDItem
+from src.code_gen.utils import *
 
 
 class CodeGen:
@@ -18,7 +19,10 @@ class CodeGen:
     _VARIABLES_DISPLACEMENT = 3 * _WORD_SIZE
 
     def __init__(self):
+        self.line_no = None
         self.lookahead = None
+        self.break_in_until = False
+        self.type_stack = []
         self.symbol_table = SymbolTable(self._WORD_SIZE)
         self.scopes = {"output": self.symbol_table.get_output_func_scope()}
         self.scope_numbers = {0, 1}
@@ -72,7 +76,12 @@ class CodeGen:
             "#increment-arg-no": self.increment_arg_no,
             "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
-            "#get-return-val": self.get_return_val
+            "#get-return-val": self.get_return_val,
+            "&break_check": self.break_check,
+            "&start_repeat": self.start_repeat,
+            "&end_repeat": self.end_repeat,
+            "&void_check": self.void_check,
+            "&type_check": self.type_check,
         }
 
     @property
@@ -129,7 +138,8 @@ class CodeGen:
     def cs_push(self, item):
         self.control_stack.append(item)
 
-    def call(self, semantic_action, lookahead):
+    def call(self, semantic_action, lookahead, line_no=None):
+        self.line_no = line_no
         self.lookahead = lookahead[1]
         print(self.pb_index, end=". ")
         print(self.symbol_table.current_scope.name, end="|")
@@ -496,7 +506,36 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.JUMP, scope.call_address)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
 
-    def close(self):
-        self.insert_main_call()
-        with open(self._OUTPUT_FILENAME, "w") as f:
-            f.write(self.assembler.code)
+    def break_check(self, lookahead):
+        if not self.break_in_until:
+            raise BreakException(self.lookahead)
+
+    def start_repeat(self, lookahead):
+        self.break_in_until = True
+
+    def end_repeat(self, lookahead):
+        self.break_in_until = False
+
+    def void_check(self, lookahead):
+        last_item = self.symbol_table.current_scope.last_item
+        if bool(last_item.var in [IDItem.IDVar.VARIABLE, IDItem.IDVar.ARRAY]
+                and last_item.element_type == IDItem.IDType.VOID):
+            raise VoidTypeException(lookahead=lookahead)
+
+    def args_count_check(self, lookahead):
+        arg_count = self.arg_counts_peek()
+        scope = self.get_function_scope(self.ss_peek(arg_count + 1))
+        if arg_count != scope.args_count:
+            raise ParameterNumber(lookahead=lookahead)
+
+    def type_check(self, lookahead):
+        pass
+
+    def close(self, semantic_error_encountered):
+        if not semantic_error_encountered:
+            self.insert_main_call()
+            with open(self._OUTPUT_FILENAME, "w") as f:
+                f.write(self.assembler.code)
+        else:
+            with open(self._OUTPUT_FILENAME, "w") as f:
+                f.write("The code has not been generated.")

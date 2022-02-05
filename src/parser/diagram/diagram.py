@@ -1,3 +1,4 @@
+from src.code_gen.utils import SemanticException
 from src.parser.diagram import State
 from src.parser.tree import Tree
 from src.parser.utils import IllegalException, ParseException, MissingException
@@ -19,6 +20,8 @@ class Diagram:
                     subtrees.append(tree)
                     if tree.root_name.startswith("#"):
                         parser.code_gen.call(tree.root_name, lookahead)
+                    if tree.root_name.startswith("&"):
+                        parser.code_gen.call(tree.root_name, lookahead, scanner.line_num)
             except ParseException as exc:
                 parser.write_error(str(exc))
                 if isinstance(exc, IllegalException):
@@ -26,6 +29,8 @@ class Diagram:
                 if isinstance(exc, MissingException):
                     state = exc.transition.dest
                 continue
+            except SemanticException as exc:
+                parser.write_semantic_error(str(exc))
         return Tree(self.name, subtrees), lookahead, state
 
     def __str__(self):

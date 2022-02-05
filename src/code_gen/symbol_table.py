@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Union, Tuple
 
+from src.code_gen.utils import ScopingException
 from src.scanner.utils import Language
 
 
@@ -55,14 +56,20 @@ class Scope:
             return self.parent.get_item(lookahead)
         return None
 
-    def get_address(self, lookahead) -> Union[Tuple, None]:
+    def get_address(self, lookahead):
+        item = self._get_address(lookahead)
+        if item is None:
+            raise ScopingException(lookahead=lookahead)
+        return item
+
+    def _get_address(self, lookahead) -> Union[Tuple, None]:
         index = 0
         for item in self.id_items:
             if item.id == lookahead:
                 return self, index
             index += item.cell_no
         if self.parent:
-            return self.parent.get_address(lookahead)
+            return self.parent._get_address(lookahead)
         return None
 
     def __str__(self):

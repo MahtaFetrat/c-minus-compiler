@@ -12,6 +12,7 @@ class Parser:
     START_STATE = "Program"
     PARSE_TREE_FILENAME = "parse_tree.txt"
     SYNTAX_ERROR_FILENAME = "syntax_errors.txt"
+    SEMANTIC_ERROR_FILENAME = "semantic_errors.txt"
 
     def __init__(self, input_filename):
         self._scanner = Scanner(input_filename)
@@ -21,7 +22,9 @@ class Parser:
 
         self._syntax_error_encountered = False
         self._unexpected_eof_encountered = False
-        self._error_out_file = open(Parser.SYNTAX_ERROR_FILENAME, "w")
+        self._semantic_error_encountered = False
+        self._error_out_file = open(self.SYNTAX_ERROR_FILENAME, "w")
+        self._semantic_error_out_file = open(self.SEMANTIC_ERROR_FILENAME, "w")
 
         self.code_gen = CodeGen()
 
@@ -49,9 +52,15 @@ class Parser:
             f"#{self._scanner.line_num} : syntax error, {error_msg}\n"
         )
 
+    def write_semantic_error(self, error_msg):
+        self._semantic_error_encountered = True
+        self._semantic_error_out_file.write(
+            f"#{self._scanner.line_num} : Semantic Error! {error_msg}\n"
+        )
+
     def close(self):
         self._scanner.close()
-        self.code_gen.close()
+        self.code_gen.close(self._semantic_error_encountered)
         if not self._syntax_error_encountered:
             self._error_out_file.write("There is no syntax error.")
         self._error_out_file.close()
