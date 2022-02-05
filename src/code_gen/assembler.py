@@ -48,7 +48,6 @@ class Assembler:
 
     def add_instruction(self, index, opcode, arg1="", arg2="", arg3=""):
         code = self._CODE_FORMAT % (index, opcode.value, arg1, arg2, arg3)
-        print(code)
         if index == len(self.program_block):
             self.program_block.append(code)
         else:

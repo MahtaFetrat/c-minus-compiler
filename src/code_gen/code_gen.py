@@ -131,12 +131,6 @@ class CodeGen:
 
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
-        print(self.pb_index, end=". ")
-        print(self.symbol_table.current_scope.name, end="|")
-        print(semantic_action, end=': ')
-        print(self.semantic_stack, end=" ")
-        print(self.control_stack, end=' ')
-        print(self.arg_counts)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
