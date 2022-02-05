@@ -7,21 +7,21 @@ from src.parser.tree import Tree
 
 class Symbol(ABC):
     def __init__(
-        self, name: str, predicts: List[str], follows: List[str], diagram=None
+            self, name: str, predicts: List[str], follows: List[str], diagram=None
     ):
         self.name = name
         self.predicts = predicts
         self.follows = follows
         self.diagram = diagram
 
-    def is_valid(self, lookahead) -> bool:
+    def is_valid(self, lookahead, dest=None) -> bool:
         token_type, token_string = lookahead
         return bool(token_type in self.predicts or token_string in self.predicts)
 
     def accept(self, lookahead, scanner, parser):
         raise NotImplementedError
 
-    def is_missing(self, lookahead):
+    def is_missing(self, lookahead) -> bool:
         token_type, token_string = lookahead
         return bool(token_type in self.follows or token_string in self.follows)
 
@@ -50,18 +50,34 @@ class Epsilon(Symbol):
         return Tree("epsilon", None), lookahead
 
 
+class SemanticAction(Symbol):
+    def accept(self, lookahead, scanner, parser):
+        return Tree(self.name, None), lookahead
+
+    def is_valid(self, lookahead, dest=None) -> bool:
+        if not dest:
+            raise ValueError
+
+        transitions = list(filter(lambda x: x.is_valid(lookahead), dest.transitions))
+        return True if (transitions or not dest.transitions) else False
+
+    def is_missing(self, lookahead):
+        return False
+
+
 __all__ = {
     SymbolType.TERMINAL: Terminal,
     SymbolType.NON_TERMINAL: NonTerminal,
     SymbolType.EPSILON: Epsilon,
+    SymbolType.SEMANTIC_ACTION: SemanticAction
 }
 
 
 def create_symbol(
-    name,
-    symbol_type: SymbolType,
-    predicts: List[str] = None,
-    follows: List[str] = None,
-    diagram=None,
+        name,
+        symbol_type: SymbolType,
+        predicts: List[str] = None,
+        follows: List[str] = None,
+        diagram=None,
 ):
     return __all__[symbol_type](name, predicts, follows, diagram)

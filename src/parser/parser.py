@@ -1,3 +1,7 @@
+from pprint import pprint
+
+from src.code_gen.code_gen import CodeGen
+
 from src.parser.diagram.builder import Builder
 from src.parser.diagram.dict.diagram_dict import DiagramDict
 from src.parser.tree import Tree
@@ -19,6 +23,8 @@ class Parser:
         self._unexpected_eof_encountered = False
         self._error_out_file = open(Parser.SYNTAX_ERROR_FILENAME, "w")
 
+        self.code_gen = CodeGen()
+
     @property
     def stopped(self):
         return self._unexpected_eof_encountered
@@ -26,7 +32,7 @@ class Parser:
     def parse(self):
         diagram = self._transition_diagram[Parser.START_STATE]
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
-        Parser._write_parse_tree(tree)
+        self._write_parse_tree(tree)
         self.close()
 
     @staticmethod
@@ -44,6 +50,9 @@ class Parser:
 
     def close(self):
         self._scanner.close()
+        self.code_gen.close()
         if not self._syntax_error_encountered:
             self._error_out_file.write("There is no syntax error.")
+        with open("semantic_errors.txt", "w") as f:
+            f.write("The input program is semantically correct")
         self._error_out_file.close()
