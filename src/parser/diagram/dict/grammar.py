@@ -16,7 +16,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 14. Statement-list -> Statement Statement-list | EPSILON
 15. Statement -> Expression-stmt | Compound-stmt | Selection-stmt | Iteration-stmt | Return-stmt
 16. Expression-stmt -> #stmt_flag Expression #pop_stmt_flag ; | break #break_jp ; | ;
-17. Selection-stmt -> if ( Expression ) #save Statement Else-stmt
+17. Selection-stmt -> if ( Expression ) #save_3 Statement Else-stmt
 18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
 19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat_jp #break_assign
 20. Return-stmt -> return Return-stmt-prime #return_jp
@@ -38,9 +38,9 @@ GRAMMAR = """1. Program -> Declaration-list $
 36. Term-zegond -> Factor-zegond G
 37. G -> * Factor #mult G | EPSILON
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
-39. Var-call-prime -> #initialize_arg_count ( Args ) #update_displays #set_args #func_call #get_return_val #retrieve_display | Var-prime
+39. Var-call-prime -> #initialize_arg_count ( Args ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | Var-prime
 40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #initialize_arg_count ( Args ) #update_displays #set_args #func_call #get_return_val #retrieve_display | EPSILON
+41. Factor-prime -> #initialize_arg_count ( Args ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #increment_arg_no Arg-list-prime

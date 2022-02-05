@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from src.code_gen.code_gen import CodeGen
 
 from src.parser.diagram.builder import Builder

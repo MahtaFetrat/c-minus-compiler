@@ -35,17 +35,30 @@ class Scope:
         self.args_count = 0
         self.call_address = -1
 
+        self.temp_variables_count = 0
+
     @property
     def last_item(self):
         return self.id_items[-1]
 
-    def size(self, word_size):
-        return sum(
-            id_item.cell_no * word_size
+    def temp_variable_size(self, word_size):
+        return word_size * self.temp_variables_count
+
+    def local_variable_size(self, word_size):
+        return word_size * (sum(
+            id_item.cell_no
             for id_item in filter(
                 lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items
             )
-        )
+        ))
+
+    def variable_size(self, word_size):
+        return word_size * (self.temp_variables_count + sum(
+            id_item.cell_no
+            for id_item in filter(
+                lambda x: x.var != IDItem.IDVar.FUNCTION, self.id_items
+            )
+        ))
 
     def get_item(self, lookahead) -> Union[IDItem, None]:
         for item in self.id_items:
@@ -106,8 +119,7 @@ class Scope:
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
 
-    def __init__(self, word_size):
-        self.word_size = word_size
+    def __init__(self):
         self.global_scope = Scope(0)
         self.global_scope.add_symbol()
         self.global_scope.set_id("output")
@@ -127,10 +139,6 @@ class SymbolTable:
     @property
     def current_scope(self) -> Scope:
         return self.stack[-1]
-
-    @property
-    def current_scope_size(self):
-        return self.current_scope.size(self.word_size)
 
     def add_scope(self):
         self.stack.append(
@@ -173,3 +181,7 @@ class SymbolTable:
 
     def get_function_scope(self, function_name):
         return self.current_scope.get_function_scope(function_name)
+
+    def increment_temp_variables_count(self):
+        self.current_scope.temp_variables_count += 1
+
