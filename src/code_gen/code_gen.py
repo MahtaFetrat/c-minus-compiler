@@ -160,12 +160,6 @@ class CodeGen:
 
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
-        print(self.pb_index, end=". ")
-        print(self.symbol_table.current_scope.name, end="|")
-        print(semantic_action, end=': ')
-        print(self.semantic_stack, end=" ")
-        print(self.control_stack, end=' ')
-        print(self.arg_counts)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
@@ -211,10 +205,12 @@ class CodeGen:
         self.ss_push(self.constant(lookahead))
 
     def assign(self, lookahead):
-        rhs = self.ss_pop(self.pb_index)
+        rhs = self.semantic_stack.pop()
+        rhs_converted = self.convert_runtime_temp(rhs, self.symbol_table.current_scope, self.pb_index)
+        rhs_converted = rhs_converted if rhs_converted else rhs
         var = self.ss_pop(self.pb_index)
         indirect = self.indirect(var, self.pb_index)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, rhs, indirect)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, rhs_converted, indirect)
         self.ss_push(rhs)
 
     def displace(self, lookahead):
@@ -336,7 +332,7 @@ class CodeGen:
         )
 
     def retrieve_display(self, lookahead):
-        return_value = self.ss_pop(self.pb_index)
+        return_value = self.semantic_stack.pop()
         scope = self.get_function_scope(self.ss_pop(self.pb_index))
         self.ss_push(return_value)
 
@@ -527,8 +523,7 @@ class CodeGen:
     def get_return_val(self, lookahead):
         scope = self.get_function_scope(self.ss_peek(self.pb_index))
 
-        runtime_temp = self.get_runtime_temp_var()
-        temp = self.convert_runtime_temp(runtime_temp, self.symbol_table.current_scope, self.pb_index)
+        temp = self.get_temp_var()
         self.pb_insert(
             self.pb_index,
             OPCode.ADD,
@@ -536,8 +531,12 @@ class CodeGen:
             self.constant(self._RETURN_VALUE_DISPLACEMENT),
             temp,
         )
-        temp_indirect = self.indirect(temp, self.pb_index)
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, temp_indirect, temp)
+        temp2 = self.get_temp_var()
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(self.get_display_address(scope.number), self.pb_index), temp2)
+
+        runtime_temp = self.get_runtime_temp_var()
+        current_scope_temp = self.convert_runtime_temp(runtime_temp, self.symbol_table.current_scope, self.pb_index, display_address=temp2)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp, self.pb_index), current_scope_temp)
         self.ss_push(runtime_temp)
 
     def get_function_scope(self, function_name):
