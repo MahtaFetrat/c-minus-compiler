@@ -10,7 +10,7 @@ class CodeGen:
     _DATA_ADDRESS = 0
     _RUNTIME_STACK_TOP = 500
     _STACK_ADDRESS = _RUNTIME_STACK_TOP + 11 * _WORD_SIZE
-    _TEMP_ADDRESS = 10012
+    _TEMP_ADDRESS = 1000000012
 
     _SAVED_DISPLACEMENT = 0 * _WORD_SIZE
     _RETURN_ADDRESS_DISPLACEMENT = 1 * _WORD_SIZE
@@ -245,7 +245,7 @@ class CodeGen:
     def jpf(self, lookahead):
         index = self.ss_pop(self.pb_index)
         condition = self.ss_pop(index)
-        self.pb_insert(index, OPCode.JUMP_FALSE, condition, self.pb_index)
+        self.pb_insert(index + 2, OPCode.JUMP_FALSE, condition, self.pb_index)
 
     def jpf_save(self, lookahead):
         index = self.ss_pop(self.pb_index)
@@ -378,7 +378,7 @@ class CodeGen:
             pass
 
     def break_jp(self, lookahead):
-        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(self.cs_peek()))
+        self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(self.cs_peek(), self.pb_index))
 
     def apply_id(self, lookahead):
         _id = self.ss_pop(self.pb_index)
@@ -555,7 +555,6 @@ class CodeGen:
         return scope.variable_size(self._WORD_SIZE) + self._VARIABLES_DISPLACEMENT
 
     def insert_main_call(self):
-        print("here")
         scope = self.get_function_scope("main")
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
