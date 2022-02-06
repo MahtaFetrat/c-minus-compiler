@@ -20,7 +20,7 @@ class BreakException(SemanticException):
 class VoidTypeException(SemanticException):
 
     def __str__(self):
-        return f"Illegal type of void for '{self._lookahead}'"
+        return f"Illegal type of void for '{self._lookahead}'."
 
 
 class ScopingException(SemanticException):

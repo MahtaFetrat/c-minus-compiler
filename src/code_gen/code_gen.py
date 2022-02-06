@@ -85,6 +85,9 @@ class CodeGen:
             "#end-loop": self.end_loop,
             "#report-mistype": self.report_mistype,
             "#report-assignment": self.report_assignment,
+            "#dispstart": self.dispstart,
+            "#argstart": self.argstart,
+            "#argend": self.argend
         }
 
     @property
@@ -173,7 +176,6 @@ class CodeGen:
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
         print(semantic_action, end=" ")
-        print(self.semantic_stack, end=" ")
         print(self.semantic_error_stack)
         self.routines[semantic_action](self.lookahead)
 
@@ -222,6 +224,7 @@ class CodeGen:
             id_item = self.symbol_table.get_id_item(lookahead)
             self.semantic_error_stack.append(id_item)
         except Exception:
+            self.semantic_error_stack.append("NUM")
             raise ScopingException(lookahead)
         self.ss_push(lookahead)
 
@@ -238,6 +241,7 @@ class CodeGen:
             pass
 
     def pnum(self, lookahead):
+        self.semantic_error_stack.append("NUM")
         self.ss_push(self.constant(lookahead))
 
     def assign(self, lookahead):
@@ -249,7 +253,22 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, rhs_converted, indirect)
         self.ss_push(rhs)
 
+    def argstart(self, lookahead):
+        self.semantic_error_stack.append("args")
+
+    def argend(self, lookahead):
+        while self.semantic_error_stack[-1] != "args":
+            self.semantic_error_stack.pop()
+        self.semantic_error_stack.pop()
+
+    def dispstart(self, lookahead):
+        self.semantic_error_stack.append("disps")
+
     def displace(self, lookahead):
+        while self.semantic_error_stack[-1] != "disps":
+            self.semantic_error_stack.pop()
+        self.semantic_error_stack.pop()
+
         displacement = self.ss_pop(self.pb_index)
         scope = self.symbol_table.current_scope
         temp = self.convert_runtime_temp(self.get_runtime_temp_var(), scope, self.pb_index)
@@ -322,17 +341,13 @@ class CodeGen:
         self.ss_push("ADD" if lookahead == "+" else "SUB")
 
     def check_operands_type(self):
-        pass
-        # operands = []
-        # while self.semantic_error_stack[-1] != "numeric":
-        #     operands.append(self.semantic_error_stack.pop())
-        # for operand in operands:
-        #     if (operand.var in [IDItem.IDVar.FUNCTION,
-        #                         IDItem.IDVar.ARRAY] and operand.is_reference == True) or operand.element_type == IDItem.IDType.VOID:
-        #         raise TypeMismatch(actual_type=(
-        #             "array" if operand.var == IDItem.IDVar.ARRAY else "function" if operand.var == IDItem.IDVar.FUNCTION else "void"))
-        # while self.semantic_error_stack[-1] == "numeric":
-        #     self.semantic_error_stack.pop()
+        first_op = self.semantic_error_stack.pop()
+        second_op = self.semantic_error_stack.pop()
+        if first_op != "NUM" and ((first_op.var in [IDItem.IDVar.FUNCTION, IDItem.IDVar.ARRAY] and first_op.is_reference == True) or first_op.element_type == IDItem.IDType.VOID):
+            raise TypeMismatch(actual_type=("array" if first_op.var == IDItem.IDVar.ARRAY else "function" if first_op.var == IDItem.IDVar.FUNCTION else "void"))
+        if second_op != "NUM" and ((second_op.var in [IDItem.IDVar.FUNCTION, IDItem.IDVar.ARRAY] and second_op.is_reference == True) or second_op.element_type == IDItem.IDType.VOID):
+            raise TypeMismatch(actual_type=("array" if second_op.var == IDItem.IDVar.ARRAY else "function" if second_op.var == IDItem.IDVar.FUNCTION else "void"))
+        self.semantic_error_stack.append("NUM")
 
     def add(self, lookahead):
         self.check_operands_type()
@@ -574,6 +589,9 @@ class CodeGen:
             self.semantic_error_stack.pop()
 
     def increment_arg_no(self, lookahead):
+        # arg = self.semantic_error_stack.pop()
+        # function_scope = self.get_function_scope(self.semantic_error_stack[-1])
+        # if function_scope.id_items[self.arg_counts[-1]].element_type
         # arg = self.get_arg()
         # function_scope = self.get_function_scope(self.get_function_item().id)
         # if arg == None:

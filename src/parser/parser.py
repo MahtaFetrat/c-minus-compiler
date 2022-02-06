@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from src.code_gen.code_gen import CodeGen
 
 from src.parser.diagram.builder import Builder
@@ -71,6 +69,6 @@ class Parser:
 
 if __name__ == '__main__':
     p = Parser('/home/matt/PycharmProjects/compiler/'
-               '/test/code_gen/test_files/S5/input.txt'
+               '/test/code_gen/test_files/S1/input.txt'
                )
     p.parse()
