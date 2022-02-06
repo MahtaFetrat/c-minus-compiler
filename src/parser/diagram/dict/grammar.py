@@ -5,7 +5,7 @@ GRAMMAR = """1. Program -> Declaration-list $
 3. Declaration -> #declare Declaration-initial Declaration-prime
 4. Declaration-initial -> #declare_type Type-specifier #declare_ID ID
 5. Declaration-prime -> #declare_func #add_scope #save Fun-declaration-prime #release_scope #skip | Var-declaration-prime
-6. Var-declaration-prime -> #declare_var ; | #declare_array [ #cell_no NUM ] ;
+6. Var-declaration-prime -> #declare_var #void_check ; | #declare_array [ #cell_no NUM ] #void_check ;
 7. Fun-declaration-prime -> ( Params ) #save #set_call_address #init_return_val Compound-stmt #set_runtime_stack_top #return_jp
 8. Type-specifier -> int | void
 9. Params -> #declare #arg_count #declare_type int #declare_ID ID Param-prime Param-list | void
@@ -18,11 +18,11 @@ GRAMMAR = """1. Program -> Declaration-list $
 16. Expression-stmt -> #stmt_flag Expression #pop_stmt_flag ; | break #break_jp ; | ;
 17. Selection-stmt -> if ( Expression ) #save_3 Statement Else-stmt
 18. Else-stmt -> endif #jpf | else #jpf_save Statement #jp endif
-19. Iteration-stmt -> repeat #break_label #save #label Statement until ( Expression ) #repeat_jp #break_assign
+19. Iteration-stmt -> repeat #break_label #save #label Statement until #end_loop ( Expression ) #repeat_jp #break_assign
 20. Return-stmt -> return Return-stmt-prime #return_jp
 21. Return-stmt-prime -> ; | Expression #save_return_val ;
 22. Expression -> Simple-expression-zegond | #pid ID B
-23. B -> #assign_id = Expression #assign | #assign_id [ Expression #displace ] H | #apply_id Simple-expression-prime
+23. B -> #assign_id = #report_assignment Expression #assign | #assign_id [ #dispstart Expression #displace ] H | #apply_id Simple-expression-prime
 24. H -> = Expression #assign | #get_indirect_value G D C
 25. Simple-expression-zegond -> Additive-expression-zegond C
 26. Simple-expression-prime -> Additive-expression-prime C
@@ -38,9 +38,9 @@ GRAMMAR = """1. Program -> Declaration-list $
 36. Term-zegond -> Factor-zegond G
 37. G -> * Factor #mult G | EPSILON
 38. Factor -> ( Expression ) | #pid ID Var-call-prime | #pnum NUM
-39. Var-call-prime -> #initialize_arg_count ( Args ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | Var-prime
-40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id EPSILON
-41. Factor-prime -> #initialize_arg_count ( Args ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | EPSILON
+39. Var-call-prime -> #initialize_arg_count ( #argstart Args #argend ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | Var-prime
+40. Var-prime -> #assign_id [ Expression #displace ] #get_indirect_value | #apply_id #report_mistype EPSILON
+41. Factor-prime -> #initialize_arg_count ( #argstart Args #argend ) #pruntime_top #update_displays #set_args #func_call #get_return_val #retrieve_display | #report_mistype EPSILON
 42. Factor-zegond -> ( Expression ) | #pnum NUM
 43. Args -> Arg-list | EPSILON
 44. Arg-list -> Expression #increment_arg_no Arg-list-prime

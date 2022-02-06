@@ -2,6 +2,8 @@ from typing import Dict, Any
 
 from src.code_gen.assembler import Assembler, OPCode
 from src.code_gen.symbol_table import SymbolTable, IDItem
+from src.code_gen.utils.exceptions import ScopingException, VoidTypeException, ParameterNumber, BreakException, \
+    TypeMismatch, ParameterType
 
 
 class CodeGen:
@@ -17,7 +19,8 @@ class CodeGen:
     _RETURN_VALUE_DISPLACEMENT = 2 * _WORD_SIZE
     _VARIABLES_DISPLACEMENT = 3 * _WORD_SIZE
 
-    def __init__(self):
+    def __init__(self, scanner):
+        self.scanner = scanner
         self.lookahead = None
         self.symbol_table = SymbolTable()
         self.scopes = {"output": self.symbol_table.get_output_func_scope()}
@@ -26,6 +29,9 @@ class CodeGen:
         self.control_stack = []
         self.assembler = Assembler(self._DATA_ADDRESS, self._TEMP_ADDRESS, self._STACK_ADDRESS, self._RUNTIME_STACK_TOP)
         self.arg_counts = []
+        self.semantic_error_file = open("semantic_errors.txt", "a", encoding="utf-8")
+        self.repeat_encountered = False
+        self.semantic_error_stack = []
         self.routines: Dict[str, Any] = {
             "#declare": self.declare,
             "#declare-ID": self.declare_id,
@@ -74,7 +80,14 @@ class CodeGen:
             "#init-return-val": self.init_return_val,
             "#save-return-val": self.save_return_val,
             "#get-return-val": self.get_return_val,
-            "#pruntime-top": self.pruntime_top
+            "#pruntime-top": self.pruntime_top,
+            "#void-check": self.void_check,
+            "#end-loop": self.end_loop,
+            "#report-mistype": self.report_mistype,
+            "#report-assignment": self.report_assignment,
+            "#dispstart": self.dispstart,
+            "#argstart": self.argstart,
+            "#argend": self.argend
         }
 
     @property
@@ -122,8 +135,10 @@ class CodeGen:
     def convert_runtime_temp(self, item, scope, pb_index, display_address=None):
         if str(item).startswith("^"):
             temp = self.get_temp_var()
-            self.pb_insert(pb_index, OPCode.ASSIGN, display_address if display_address else self.get_display_address(scope.number), temp)
-            self.pb_insert(pb_index + 1, OPCode.ADD, self.constant(self.get_temp_variable_displacement(scope, int(str(item)[1:]))), temp, temp)
+            self.pb_insert(pb_index, OPCode.ASSIGN,
+                           display_address if display_address else self.get_display_address(scope.number), temp)
+            self.pb_insert(pb_index + 1, OPCode.ADD,
+                           self.constant(self.get_temp_variable_displacement(scope, int(str(item)[1:]))), temp, temp)
             return self.indirect(temp, pb_index)
         return None
 
@@ -198,10 +213,34 @@ class CodeGen:
         func_name = self.symbol_table.current_scope.name
         self.scopes[func_name] = self.symbol_table.pop()
 
+    def end_loop(self, lookahead):
+        self.repeat_encountered = False
+
     def pid(self, lookahead):
+        try:
+            self.get_address(lookahead)
+            id_item = self.symbol_table.get_id_item(lookahead)
+            id_item.is_reference = False
+            self.semantic_error_stack.append(id_item)
+        except Exception:
+            self.semantic_error_stack.append("NUM")
+            raise ScopingException(lookahead)
         self.ss_push(lookahead)
 
+    def report_assignment(self, lookahead):
+        lhs = self.semantic_error_stack.pop()
+        if lhs.element_type != IDItem.IDType.INT or lhs.var != IDItem.IDVar.VARIABLE:
+            raise TypeMismatch(actual_type=(
+                "array" if lhs.var == IDItem.IDVar.ARRAY else "function" if lhs.var == IDItem.IDVar.FUNCTION else "void"))
+
+    def report_mistype(self, lookahead):
+        try:
+            self.semantic_error_stack[-1].is_reference = True
+        except:
+            pass
+
     def pnum(self, lookahead):
+        self.semantic_error_stack.append("NUM")
         self.ss_push(self.constant(lookahead))
 
     def assign(self, lookahead):
@@ -213,7 +252,22 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, rhs_converted, indirect)
         self.ss_push(rhs)
 
+    def argstart(self, lookahead):
+        self.semantic_error_stack.append("args")
+
+    def argend(self, lookahead):
+        while self.semantic_error_stack[-1] != "args":
+            self.semantic_error_stack.pop()
+        self.semantic_error_stack.pop()
+
+    def dispstart(self, lookahead):
+        self.semantic_error_stack.append("disps")
+
     def displace(self, lookahead):
+        while self.semantic_error_stack[-1] != "disps":
+            self.semantic_error_stack.pop()
+        self.semantic_error_stack.pop()
+
         displacement = self.ss_pop(self.pb_index)
         scope = self.symbol_table.current_scope
         temp = self.convert_runtime_temp(self.get_runtime_temp_var(), scope, self.pb_index)
@@ -251,6 +305,7 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.EMPTY)
 
     def break_label(self, lookahead):
+        self.repeat_encountered = True
         temp = self.get_temp_var()
         self.cs_push(temp)
 
@@ -269,6 +324,8 @@ class CodeGen:
         self.ss_push("LT" if lookahead == "<" else "EQ")
 
     def cmp(self, lookahead):
+        self.check_operands_type()
+
         second_operand = self.ss_pop(self.pb_index)
         operator = self.ss_pop(self.pb_index)
         first_operand = self.ss_pop(self.pb_index)
@@ -282,7 +339,18 @@ class CodeGen:
     def addop(self, lookahead):
         self.ss_push("ADD" if lookahead == "+" else "SUB")
 
+    def check_operands_type(self):
+        first_op = self.semantic_error_stack.pop()
+        second_op = self.semantic_error_stack.pop()
+        if first_op != "NUM" and ((first_op.var in [IDItem.IDVar.FUNCTION, IDItem.IDVar.ARRAY] and first_op.is_reference == True) or first_op.element_type == IDItem.IDType.VOID):
+            raise TypeMismatch(actual_type=("array" if first_op.var == IDItem.IDVar.ARRAY else "function" if first_op.var == IDItem.IDVar.FUNCTION else "void"))
+        if second_op != "NUM" and ((second_op.var in [IDItem.IDVar.FUNCTION, IDItem.IDVar.ARRAY] and second_op.is_reference == True) or second_op.element_type == IDItem.IDType.VOID):
+            raise TypeMismatch(actual_type=("array" if second_op.var == IDItem.IDVar.ARRAY else "function" if second_op.var == IDItem.IDVar.FUNCTION else "void"))
+        self.semantic_error_stack.append("NUM")
+
     def add(self, lookahead):
+        self.check_operands_type()
+
         second_operand = self.ss_pop(self.pb_index)
         operator = self.ss_pop(self.pb_index)
         first_operand = self.ss_pop(self.pb_index)
@@ -293,7 +361,15 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode(operator), first_operand, second_operand, temp)
         self.ss_push(runtime_temp)
 
+    def void_check(self, lookahead):
+        last_item = self.symbol_table.current_scope.last_item
+        if bool(last_item.var in [IDItem.IDVar.VARIABLE, IDItem.IDVar.ARRAY]
+                and last_item.element_type == IDItem.IDType.VOID):
+            raise VoidTypeException(lookahead=last_item.id)
+
     def mult(self, lookahead):
+        self.check_operands_type()
+
         scope = self.symbol_table.current_scope
 
         runtime_temp = self.get_runtime_temp_var()
@@ -374,6 +450,8 @@ class CodeGen:
             pass
 
     def break_jp(self, lookahead):
+        if not self.repeat_encountered:
+            raise BreakException()
         self.pb_insert(self.pb_index, OPCode.JUMP, self.indirect(self.cs_peek(), self.pb_index))
 
     def apply_id(self, lookahead):
@@ -391,7 +469,8 @@ class CodeGen:
         scope = scope.number
         if scope != 0:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_local_variable_displacement(index)), temp)
+            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_local_variable_displacement(index)),
+                           temp)
 
             if var == IDItem.IDVar.ARRAY and index < args_count:
                 temp_indirect = self.indirect(temp, self.pb_index)
@@ -422,7 +501,8 @@ class CodeGen:
         scope = scope.number
         if scope != 0:
             self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope), temp)
-            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_local_variable_displacement(index)), temp)
+            self.pb_insert(self.pb_index, OPCode.ADD, temp, self.constant(self.get_local_variable_displacement(index)),
+                           temp)
             if var == IDItem.IDVar.ARRAY and index < args_count:
                 temp_indirect = self.indirect(temp, self.pb_index)
                 self.pb_insert(self.pb_index, OPCode.ASSIGN, temp_indirect, temp)
@@ -439,7 +519,8 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.get_display_address(scope.number), ar_temp)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self._RUNTIME_STACK_TOP, self.get_display_address(scope.number))
 
-        cmp_temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
+        cmp_temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope,
+                                             self.pb_index)
         self.pb_insert(self.pb_index, OPCode.LESS, self.constant(0), ar_temp, cmp_temp)
         self.pb_insert(self.pb_index, OPCode.JUMP_FALSE, cmp_temp, self.pb_index + 2)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, ar_temp, self.indirect(self._RUNTIME_STACK_TOP, self.pb_index))
@@ -490,7 +571,36 @@ class CodeGen:
             temp_indirect = self.indirect(temp, self.pb_index)
             self.pb_insert(self.pb_index, OPCode.ASSIGN, op, temp_indirect)
 
+    def get_function_item(self):
+        for item in self.semantic_error_stack[::-1]:
+            if type(item) != str and item.var == IDItem.IDVar.FUNCTION:
+                return item
+
+    def get_arg(self):
+        for item in self.semantic_error_stack[::-1]:
+            if item == "args":
+                return None
+            elif type(item) != str:
+                return item
+        while self.semantic_error_stack[-1] != "args":
+            self.semantic_error_stack.pop()
+
     def increment_arg_no(self, lookahead):
+        arg = self.semantic_error_stack.pop()
+        function_scope = self.get_function_scope(self.semantic_error_stack[-2].id)
+        if self.arg_counts[-1] + 1 > function_scope.args_count:
+            raise ParameterNumber(function_scope.name)
+        param = function_scope.id_items[self.arg_counts[-1]]
+        if param.var == IDItem.IDVar.VARIABLE and arg != "NUM" and arg.var != IDItem.IDVar.VARIABLE and not (arg.var == IDItem.IDVar.ARRAY and not arg.is_reference) and not (arg.var == IDItem.IDVar.FUNCTION and not arg.is_reference and arg.element_type == IDItem.IDType.INT):
+            raise ParameterType(lookahead=function_scope.name,
+                                arg_no=self.arg_counts[-1] + 1,
+                                expected_type="int" if param.var == IDItem.IDVar.VARIABLE else "array",
+                                actual_type="int" if arg == "NUM" else "array" if arg.var == IDItem.IDVar.ARRAY else "int")
+        if param.var == IDItem.IDVar.ARRAY and (arg == "NUM" or arg.var == IDItem.IDVar.VARIABLE or (arg.var == IDItem.IDVar.ARRAY and not arg.is_reference) or arg.var == IDItem.IDVar.FUNCTION):
+            raise ParameterType(lookahead=function_scope.name,
+                                arg_no=self.arg_counts[-1] + 1,
+                                expected_type="array" if param.var == IDItem.IDVar.ARRAY else "int",
+                                actual_type="int" if arg == "NUM" else "array" if arg.var == IDItem.IDVar.ARRAY else "int")
         self.arg_counts[-1] = self.arg_counts[-1] + 1
 
     def init_return_val(self, lookahead):
@@ -532,17 +642,20 @@ class CodeGen:
             temp,
         )
         temp2 = self.get_temp_var()
-        self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(self.get_display_address(scope.number), self.pb_index), temp2)
+        self.pb_insert(self.pb_index, OPCode.ASSIGN,
+                       self.indirect(self.get_display_address(scope.number), self.pb_index), temp2)
 
         runtime_temp = self.get_runtime_temp_var()
-        current_scope_temp = self.convert_runtime_temp(runtime_temp, self.symbol_table.current_scope, self.pb_index, display_address=temp2)
+        current_scope_temp = self.convert_runtime_temp(runtime_temp, self.symbol_table.current_scope, self.pb_index,
+                                                       display_address=temp2)
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.indirect(temp, self.pb_index), current_scope_temp)
         self.ss_push(runtime_temp)
 
     def get_function_scope(self, function_name):
         if function_name in self.scopes:
             return self.scopes[function_name]
-        return self.symbol_table.get_function_scope(function_name)
+        function_scope = self.symbol_table.get_function_scope(function_name)
+        return function_scope
 
     def get_address(self, _id):
         scope, index = self.symbol_table.get_address(_id)
@@ -571,6 +684,10 @@ class CodeGen:
         self.pb_insert(self.pb_index, OPCode.ASSIGN, self.constant(0), self.get_temp_var())
 
     def close(self):
-        self.insert_main_call()
-        with open(self._OUTPUT_FILENAME, "w") as f:
-            f.write(self.assembler.code)
+        try:
+            self.insert_main_call()
+            with open(self._OUTPUT_FILENAME, "w") as f:
+                f.write(self.assembler.code)
+        except Exception:
+            with open(self._OUTPUT_FILENAME, "w") as f:
+                f.write("The code has not been generated.")

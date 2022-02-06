@@ -1,3 +1,4 @@
+from src.code_gen.utils.exceptions import SemanticException
 from src.parser.diagram import State
 from src.parser.tree import Tree
 from src.parser.utils import IllegalException, ParseException, MissingException
@@ -26,6 +27,10 @@ class Diagram:
                 if isinstance(exc, MissingException):
                     state = exc.transition.dest
                 continue
+            except SemanticException as exc:
+                parser.write_semantic_error(str(exc))
+            except:
+                pass
         return Tree(self.name, subtrees), lookahead, state
 
     def __str__(self):

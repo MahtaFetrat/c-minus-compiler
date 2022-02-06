@@ -20,10 +20,10 @@ class IDItem:
         self.element_type = self.IDType.INT
         self.var = self.IDVar.VARIABLE
         self.cell_no = 1
+        self.is_reference = False
 
-    def __str__(self):
-        return f"{self.id}:{self.scope.get_address(self.id)}"
-
+    def __repr__(self):
+        return str(self.id)
 
 class Scope:
     def __init__(self, number, parent=None, name=None):
@@ -115,6 +115,17 @@ class Scope:
             return self
         return self.parent.get_function_scope(function_name)
 
+    def get_id_item(self, _id):
+        for index, item in enumerate(self.id_items):
+            if item.id == _id:
+                return item
+        if self.parent:
+            return self.parent.get_id_item(_id)
+        return None
+
+    def __repr__(self):
+        return self.name
+
 
 class SymbolTable:
     keyword = list(set(Language.KEYWORDS.value()))
@@ -130,9 +141,11 @@ class SymbolTable:
     def get_output_func_scope(self):
         output_scope = Scope(1, self.global_scope, "output")
         output_scope.set_call_address(3)
+        output_scope.args_count = 1
         output_scope.add_symbol()
         output_scope.set_var(IDItem.IDVar.VARIABLE)
         output_scope.set_type(IDItem.IDType.INT)
+        output_scope.set_cell_no(1)
 
         return output_scope
 
@@ -184,4 +197,7 @@ class SymbolTable:
 
     def increment_temp_variables_count(self):
         self.current_scope.temp_variables_count += 1
+
+    def get_id_item(self, _id):
+        return self.current_scope.get_id_item(_id)
 
