@@ -175,8 +175,6 @@ class CodeGen:
 
     def call(self, semantic_action, lookahead):
         self.lookahead = lookahead[1]
-        print(semantic_action, end=" ")
-        print(self.semantic_error_stack)
         self.routines[semantic_action](self.lookahead)
 
     def declare(self, lookahead):
@@ -222,6 +220,7 @@ class CodeGen:
         try:
             self.get_address(lookahead)
             id_item = self.symbol_table.get_id_item(lookahead)
+            id_item.is_reference = False
             self.semantic_error_stack.append(id_item)
         except Exception:
             self.semantic_error_stack.append("NUM")
@@ -559,8 +558,6 @@ class CodeGen:
         arg_count = self.arg_counts_pop()
         display_address = self.ss_pop(self.pb_index)
         scope = self.get_function_scope(self.ss_peek(self.pb_index, arg_count + 1))
-        if arg_count != scope.args_count:
-            raise ParameterNumber(scope.name)
         temp = self.convert_runtime_temp(self.get_runtime_temp_var(), self.symbol_table.current_scope, self.pb_index)
         for arg_no in range(arg_count, 0, -1):
             self.pb_insert(
@@ -589,24 +586,21 @@ class CodeGen:
             self.semantic_error_stack.pop()
 
     def increment_arg_no(self, lookahead):
-        # arg = self.semantic_error_stack.pop()
-        # function_scope = self.get_function_scope(self.semantic_error_stack[-1])
-        # if function_scope.id_items[self.arg_counts[-1]].element_type
-        # arg = self.get_arg()
-        # function_scope = self.get_function_scope(self.get_function_item().id)
-        # if arg == None:
-        #     if function_scope.id_items[self.arg_counts[-1]].element_type != IDItem.IDType.INT:
-        #         raise ParameterType(lookahead=function_scope.name,
-        #                             arg_no=self.arg_counts[-1] + 1,
-        #                             expected_type=function_scope.id_items[self.arg_counts[-1]].element_type,
-        #                             actual_type="int")
-        # else:
-        #     if function_scope.id_items[self.arg_counts[-1]].element_type != arg.element_type:
-        #         raise ParameterType(lookahead=function_scope.name,
-        #                             arg_no=self.arg_counts[-1] + 1,
-        #                             expected_type=function_scope.id_items[self.arg_counts[-1]].element_type,
-        #                             actual_type=arg.element_type)
-
+        arg = self.semantic_error_stack.pop()
+        function_scope = self.get_function_scope(self.semantic_error_stack[-2].id)
+        if self.arg_counts[-1] + 1 > function_scope.args_count:
+            raise ParameterNumber(function_scope.name)
+        param = function_scope.id_items[self.arg_counts[-1]]
+        if param.var == IDItem.IDVar.VARIABLE and arg != "NUM" and arg.var != IDItem.IDVar.VARIABLE and not (arg.var == IDItem.IDVar.ARRAY and not arg.is_reference) and not (arg.var == IDItem.IDVar.FUNCTION and not arg.is_reference and arg.element_type == IDItem.IDType.INT):
+            raise ParameterType(lookahead=function_scope.name,
+                                arg_no=self.arg_counts[-1] + 1,
+                                expected_type="int" if param.var == IDItem.IDVar.VARIABLE else "array",
+                                actual_type="int" if arg == "NUM" else "array" if arg.var == IDItem.IDVar.ARRAY else "int")
+        if param.var == IDItem.IDVar.ARRAY and (arg == "NUM" or arg.var == IDItem.IDVar.VARIABLE or (arg.var == IDItem.IDVar.ARRAY and not arg.is_reference) or arg.var == IDItem.IDVar.FUNCTION):
+            raise ParameterType(lookahead=function_scope.name,
+                                arg_no=self.arg_counts[-1] + 1,
+                                expected_type="array" if param.var == IDItem.IDVar.ARRAY else "int",
+                                actual_type="int" if arg == "NUM" else "array" if arg.var == IDItem.IDVar.ARRAY else "int")
         self.arg_counts[-1] = self.arg_counts[-1] + 1
 
     def init_return_val(self, lookahead):

@@ -22,12 +22,8 @@ class IDItem:
         self.cell_no = 1
         self.is_reference = False
 
-    def __str__(self):
-        return f"{self.id}:{self.scope.get_address(self.id)}"
-
     def __repr__(self):
-        return self.id
-
+        return str(self.id)
 
 class Scope:
     def __init__(self, number, parent=None, name=None):
@@ -149,6 +145,7 @@ class SymbolTable:
         output_scope.add_symbol()
         output_scope.set_var(IDItem.IDVar.VARIABLE)
         output_scope.set_type(IDItem.IDType.INT)
+        output_scope.set_cell_no(1)
 
         return output_scope
 

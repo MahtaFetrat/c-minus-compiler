@@ -41,7 +41,6 @@ class Parser:
         tree, _, _ = diagram.accept(self._scanner.get_next_token(), self._scanner, self)
         self._write_parse_tree(tree)
         self.close()
-        print(str(tree))
 
     @staticmethod
     def _write_parse_tree(tree: Tree):
@@ -65,10 +64,3 @@ class Parser:
             self._semantic_error_out_file.write("The input program is semantically correct")
         self._semantic_error_out_file.close()
         self._error_out_file.close()
-
-
-if __name__ == '__main__':
-    p = Parser('/home/matt/PycharmProjects/compiler/'
-               '/test/code_gen/test_files/S1/input.txt'
-               )
-    p.parse()
